@@ -1,0 +1,84 @@
+import { z } from 'zod';
+import type { ScrapeStrategy } from './enums';
+
+/**
+ * scrape_config (companies.scrape_config jsonb) — 전략별 Discriminated Union.
+ *
+ * DB에는 전략이 별도 컬럼(scrape_strategy)에 있으므로 jsonb에는 discriminant 없이
+ * 전략별 설정만 저장한다 (ScrapeConfigData). 코드에서 전략별 분기가 필요할 때는
+ * parseScrapeConfig(strategy, config)로 discriminant가 합쳐진 ScrapeConfig를 얻어
+ * switch + assertNever로 exhaustive 처리한다.
+ */
+
+/** 공통: 지원 정책(재지원/중복지원) 안내가 careers_url이 아닌 다른 페이지에 있을 때 지정 */
+const policyUrlField = z.url().optional();
+
+export const leverConfigSchema = z.object({
+  /** lever slug — https://api.lever.co/v0/postings/{site}?mode=json */
+  site: z.string().min(1),
+  policyUrl: policyUrlField,
+});
+export type LeverConfig = z.infer<typeof leverConfigSchema>;
+
+export const greenhouseConfigSchema = z.object({
+  /** https://boards-api.greenhouse.io/v1/boards/{boardToken}/jobs */
+  boardToken: z.string().min(1),
+  policyUrl: policyUrlField,
+});
+export type GreenhouseConfig = z.infer<typeof greenhouseConfigSchema>;
+
+export const greetingConfigSchema = z.object({
+  /** 그리팅 채용페이지 URL (커스텀 도메인 포함) */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type GreetingConfig = z.infer<typeof greetingConfigSchema>;
+
+export const ninehireConfigSchema = z.object({
+  /** 나인하이어 채용페이지 URL (커스텀 도메인 포함) */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type NinehireConfig = z.infer<typeof ninehireConfigSchema>;
+
+export const llmConfigSchema = z.object({
+  /** 자체 채용페이지 URL */
+  url: z.url(),
+  /** CSR 페이지라 Playwright 렌더링이 필요한지 캐시 */
+  needsBrowser: z.boolean().optional(),
+  policyUrl: policyUrlField,
+});
+export type LlmConfig = z.infer<typeof llmConfigSchema>;
+
+/** DB jsonb 컬럼에 저장되는 형태 (discriminant 없음 — 전략은 scrape_strategy 컬럼) */
+export type ScrapeConfigData =
+  | LeverConfig
+  | GreenhouseConfig
+  | GreetingConfig
+  | NinehireConfig
+  | LlmConfig;
+
+export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
+  leverConfigSchema.extend({ strategy: z.literal('lever') }),
+  greenhouseConfigSchema.extend({ strategy: z.literal('greenhouse') }),
+  greetingConfigSchema.extend({ strategy: z.literal('greeting') }),
+  ninehireConfigSchema.extend({ strategy: z.literal('ninehire') }),
+  llmConfigSchema.extend({ strategy: z.literal('llm') }),
+]);
+export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;
+
+// 컴파일 타임 exhaustive check: 유니온이 SCRAPE_STRATEGIES 전체를 커버해야 한다
+type AssertEqual<A, B> = [A] extends [B] ? ([B] extends [A] ? true : never) : never;
+true satisfies AssertEqual<ScrapeConfig['strategy'], ScrapeStrategy>;
+
+/**
+ * DB에서 읽은 (scrape_strategy, scrape_config) 쌍을 검증하고
+ * discriminant가 포함된 ScrapeConfig로 변환한다. 검증 실패 시 ZodError를 던진다.
+ */
+export function parseScrapeConfig(
+  strategy: ScrapeStrategy,
+  config: unknown,
+): ScrapeConfig {
+  const data = typeof config === 'object' && config !== null ? config : {};
+  return scrapeConfigSchema.parse({ ...data, strategy });
+}

@@ -1,0 +1,149 @@
+{
+ "count": 3,
+ "results": [
+  {
+   "companyId": "4e1cfd70-6de0-11f0-9567-477c783608ca",
+   "siteURL": "mxftm9hC",
+   "recruitmentId": "42ce53a0-714b-11f1-ac71-9fcfe3c4ed35",
+   "status": "in_progress",
+   "title": "Senior Recruiter",
+   "externalTitle": "Senior Recruiter",
+   "externalTitle_english": null,
+   "addressKey": "Iuq4YeKr",
+   "deadlineValue": null,
+   "deadlineType": "until_filled",
+   "employmentType": [
+    "full_time"
+   ],
+   "career": {
+    "type": "experienced",
+    "range": {
+     "over": 5,
+     "below": 0
+    }
+   },
+   "jobLocations": [
+    {
+     "jobLocationId": "908992c0-87b9-11f0-ac65-13b41e67e16b",
+     "x": 127.0620054,
+     "y": 37.5077011,
+     "placeName": "라포랩스 본사",
+     "placeName_english": null,
+     "addressName": "대한민국 서울특별시 강남구 테헤란로98길 8",
+     "addressName_english": null
+    }
+   ],
+   "jobGroup": {
+    "jobGroupId": "b8e21100-b55b-11f0-b406-dbdf7dca48be",
+    "title": "People",
+    "title_english": null
+   },
+   "jobTask": null,
+   "affiliation": {
+    "affiliationId": "80050ec0-87b9-11f0-9370-f702f82cc3e3",
+    "title": "라포랩스",
+    "title_english": null
+   },
+   "tags": [],
+   "createdAt": "2026-06-26T10:41:04.000Z",
+   "applicantLoginEnabled": false,
+   "applicantLoginType": "required",
+   "alwaysExposure": false,
+   "isPrivate": false
+  },
+  {
+   "companyId": "4e1cfd70-6de0-11f0-9567-477c783608ca",
+   "siteURL": "mxftm9hC",
+   "recruitmentId": "07814a90-7142-11f1-8f37-1de6d841d2f9",
+   "status": "in_progress",
+   "title": "SNS 콘텐츠 마케팅 인턴",
+   "externalTitle": "SNS 콘텐츠 마케팅 인턴",
+   "externalTitle_english": null,
+   "addressKey": "Ti0Xg5X8",
+   "deadlineValue": "2026-07-05T14:59:59.000Z",
+   "deadlineType": "custom_deadline",
+   "employmentType": [
+    "intern"
+   ],
+   "career": null,
+   "jobLocations": [
+    {
+     "jobLocationId": "908992c0-87b9-11f0-ac65-13b41e67e16b",
+     "x": 127.0620054,
+     "y": 37.5077011,
+     "placeName": "라포랩스 본사",
+     "placeName_english": null,
+     "addressName": "대한민국 서울특별시 강남구 테헤란로98길 8",
+     "addressName_english": null
+    }
+   ],
+   "jobGroup": {
+    "jobGroupId": "1dd7bdc0-b06c-11f0-a64e-6d52c9ff07af",
+    "title": "Marketing",
+    "title_english": null
+   },
+   "jobTask": null,
+   "affiliation": {
+    "affiliationId": "80050ec0-87b9-11f0-9370-f702f82cc3e3",
+    "title": "라포랩스",
+    "title_english": null
+   },
+   "tags": [],
+   "createdAt": "2026-06-26T09:37:51.000Z",
+   "applicantLoginEnabled": false,
+   "applicantLoginType": "required",
+   "alwaysExposure": false,
+   "isPrivate": false
+  },
+  {
+   "companyId": "4e1cfd70-6de0-11f0-9567-477c783608ca",
+   "siteURL": "mxftm9hC",
+   "recruitmentId": "122517b0-6edb-11f1-9eac-0fc77cde0c78",
+   "status": "in_progress",
+   "title": "잡화 MD",
+   "externalTitle": "잡화 MD",
+   "externalTitle_english": null,
+   "addressKey": "Sq2JwOqj",
+   "deadlineValue": null,
+   "deadlineType": "until_filled",
+   "employmentType": [
+    "full_time"
+   ],
+   "career": {
+    "type": "experienced",
+    "range": {
+     "over": 4,
+     "below": 0
+    }
+   },
+   "jobLocations": [
+    {
+     "jobLocationId": "908992c0-87b9-11f0-ac65-13b41e67e16b",
+     "x": 127.0620054,
+     "y": 37.5077011,
+     "placeName": "라포랩스 본사",
+     "placeName_english": null,
+     "addressName": "대한민국 서울특별시 강남구 테헤란로98길 8",
+     "addressName_english": null
+    }
+   ],
+   "jobGroup": {
+    "jobGroupId": "1eccf331-b06c-11f0-a64e-6d52c9ff07af",
+    "title": "MD",
+    "title_english": null
+   },
+   "jobTask": null,
+   "affiliation": {
+    "affiliationId": "80050ec0-87b9-11f0-9370-f702f82cc3e3",
+    "title": "라포랩스",
+    "title_english": null
+   },
+   "tags": [],
+   "createdAt": "2026-06-23T08:16:16.000Z",
+   "applicantLoginEnabled": false,
+   "applicantLoginType": "required",
+   "alwaysExposure": false,
+   "isPrivate": false
+  }
+ ]
+}

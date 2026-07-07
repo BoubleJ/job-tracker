@@ -1,0 +1,43 @@
+name: scrape-jobs
+
+on:
+  schedule:
+    # UTC 21:00 = KST 06:00 — 하루 1회, 아침에 전날 갱신분 반영
+    - cron: "0 21 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: scrape-jobs
+  cancel-in-progress: false
+
+jobs:
+  scrape-jobs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Enable corepack (pnpm)
+        run: corepack enable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # llm 전략에서 needsBrowser(CSR 페이지) 회사가 있을 때만 필요.
+      # Playwright 의존성이 worker에 추가되면 주석 해제.
+      # - name: Install Playwright chromium
+      #   run: pnpm --filter @job-tracker/worker exec playwright install --with-deps chromium
+
+      - name: Run job scraper worker
+        run: pnpm --filter @job-tracker/worker scrape-jobs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL || 'https://api.groq.com/openai/v1' }}
+          LLM_MODEL_FILTER: ${{ secrets.LLM_MODEL_FILTER || 'openai/gpt-oss-20b' }}
+          LLM_MODEL_EXTRACT: ${{ secrets.LLM_MODEL_EXTRACT || 'openai/gpt-oss-120b' }}
