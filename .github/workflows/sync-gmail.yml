@@ -41,3 +41,5 @@ jobs:
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL || 'https://api.groq.com/openai/v1' }}
           LLM_MODEL_FILTER: ${{ secrets.LLM_MODEL_FILTER || 'openai/gpt-oss-20b' }}
           LLM_MODEL_EXTRACT: ${{ secrets.LLM_MODEL_EXTRACT || 'openai/gpt-oss-120b' }}
+          # 최초 동기화(커서 없음) 시 거슬러 올라갈 기간 — 이후 증분 동기화에는 영향 없음
+          GMAIL_INITIAL_SYNC_DAYS: "180"
