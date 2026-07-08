@@ -29,6 +29,7 @@ export const CATEGORIES = [
   'devops',
   'data_ai',
   'qa',
+  'game',
   'etc_dev',
 ] as const;
 export type Category = (typeof CATEGORIES)[number];
@@ -39,6 +40,7 @@ export const SCRAPE_STRATEGIES = [
   'ninehire',
   'lever',
   'greenhouse',
+  'jobflex',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

@@ -41,6 +41,13 @@ export const ninehireConfigSchema = z.object({
 });
 export type NinehireConfig = z.infer<typeof ninehireConfigSchema>;
 
+export const jobflexConfigSchema = z.object({
+  /** JOBFLEX(마이다스 recruiter.co.kr) 채용페이지 URL — 호스트가 API prefix 헤더로 쓰인다 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type JobflexConfig = z.infer<typeof jobflexConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -56,6 +63,7 @@ export type ScrapeConfigData =
   | GreenhouseConfig
   | GreetingConfig
   | NinehireConfig
+  | JobflexConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -63,6 +71,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   greenhouseConfigSchema.extend({ strategy: z.literal('greenhouse') }),
   greetingConfigSchema.extend({ strategy: z.literal('greeting') }),
   ninehireConfigSchema.extend({ strategy: z.literal('ninehire') }),
+  jobflexConfigSchema.extend({ strategy: z.literal('jobflex') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

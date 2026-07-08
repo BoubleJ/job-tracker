@@ -7,6 +7,7 @@ import {
   assertNever,
   greenhouseConfigSchema,
   greetingConfigSchema,
+  jobflexConfigSchema,
   leverConfigSchema,
   llmConfigSchema,
   ninehireConfigSchema,
@@ -60,6 +61,11 @@ function buildScrapeConfig(
       });
     case "ninehire":
       return ninehireConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "jobflex":
+      return jobflexConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });

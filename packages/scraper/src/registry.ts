@@ -8,6 +8,7 @@ import { scrapeGreeting } from './adapters/greeting';
 import { scrapeNinehire } from './adapters/ninehire';
 import { scrapeLever } from './adapters/lever';
 import { scrapeGreenhouse } from './adapters/greenhouse';
+import { scrapeJobflex } from './adapters/jobflex';
 import { scrapeLlm } from './adapters/llm';
 
 /**
@@ -20,6 +21,7 @@ export const adapters = {
   ninehire: scrapeNinehire,
   lever: scrapeLever,
   greenhouse: scrapeGreenhouse,
+  jobflex: scrapeJobflex,
   llm: scrapeLlm,
 } as const satisfies {
   [S in ScrapeStrategy]: ScrapeAdapter<Extract<ScrapeConfig, { strategy: S }>>;
@@ -39,6 +41,8 @@ export function runAdapter(config: ScrapeConfig): Promise<ScrapeResult[]> {
       return adapters.lever(config);
     case 'greenhouse':
       return adapters.greenhouse(config);
+    case 'jobflex':
+      return adapters.jobflex(config);
     case 'llm':
       return adapters.llm(config);
     default:

@@ -17,6 +17,7 @@ export const CATEGORY_LABELS: Record<Category, string> = {
   devops: "DevOps",
   data_ai: "데이터/AI",
   qa: "QA",
+  game: "게임 개발",
   etc_dev: "기타 개발",
 };
 

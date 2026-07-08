@@ -28,10 +28,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # llm 전략에서 needsBrowser(CSR 페이지) 회사가 있을 때만 필요.
-      # Playwright 의존성이 worker에 추가되면 주석 해제.
-      # - name: Install Playwright chromium
-      #   run: pnpm --filter @job-tracker/worker exec playwright install --with-deps chromium
+      # llm 전략의 needsBrowser(CSR 페이지) 회사용 — 없으면 해당 회사 스크래핑이 통째로 실패한다 (실측: 플렉스팀)
+      - name: Install Playwright chromium
+        run: pnpm --filter @job-tracker/scraper exec playwright install --with-deps chromium
 
       - name: Run job scraper worker
         run: pnpm --filter @job-tracker/worker scrape-jobs
