@@ -3,7 +3,7 @@ import { runAdapter, type ScrapeResult } from '@job-tracker/scraper';
 import { loadLlmEnv, parseScrapeConfig } from '@job-tracker/shared';
 import { contentHash } from '@job-tracker/shared/content-hash';
 import { companies, createDb, jobPostings, type Company, type Db } from '@job-tracker/db';
-import { classifyCategory, type CategoryLlmOptions } from './classify-category';
+import { classifyByKeywords, classifyCategory, type CategoryLlmOptions } from './classify-category';
 
 /**
  * 공고 스크래핑 오케스트레이터 (스펙 7-4).
@@ -12,7 +12,19 @@ import { classifyCategory, type CategoryLlmOptions } from './classify-category';
  * 3. content_hash 기준 upsert, 기존 공고는 last_seen_at 갱신
  * 4. 이번 실행에서 발견되지 않은 기존 open 공고는 closed 처리
  * 5. 회사 단위 실패 격리 (Promise.allSettled), 실패 요약 출력
+ *
+ * LLM rate limit 서킷브레이커: 분류가 429로 실패하면 이번 실행의 남은 LLM 분류를
+ * 전부 건너뛴다 (회사 간 공유). 한도 소진 상태에서 공고마다 재시도·대기를 반복하다
+ * 잡 타임아웃으로 통째로 취소되는 것을 막는다. 건너뛴 공고는 다음 실행에서 신규로 재시도.
  */
+
+interface RateLimitBreaker {
+  tripped: boolean;
+}
+
+function isRateLimitError(error: unknown): boolean {
+  return error instanceof Error && error.message.includes('LLM request failed: 429');
+}
 
 interface CompanyReport {
   company: string;
@@ -30,6 +42,7 @@ async function scrapeCompany(
   db: Db,
   llm: CategoryLlmOptions,
   company: Company,
+  breaker: RateLimitBreaker,
 ): Promise<CompanyReport> {
   const config = parseScrapeConfig(company.scrapeStrategy, company.scrapeConfig);
   const results = await runAdapter(config);
@@ -73,18 +86,32 @@ async function scrapeCompany(
       continue;
     }
 
-    // 신규 공고만 직군 분류 (스펙 7-7)
+    // 신규 공고만 직군 분류 (스펙 7-7). 키워드 분류는 LLM을 쓰지 않으므로 브레이커와 무관.
     let category;
-    try {
-      category = await classifyCategory(result.title, result.description, llm);
-    } catch (error) {
-      // 분류 실패 시 이번 실행은 건너뛴다 — 저장하지 않았으므로 다음 실행에서 신규로 재시도
-      report.classifyFailed++;
-      console.error(
-        `[scrape-jobs] ${company.name} :: category classification failed for "${result.title}":`,
-        error,
-      );
-      continue;
+    if (breaker.tripped) {
+      category = classifyByKeywords(result.title);
+      if (!category) {
+        report.classifyFailed++;
+        continue;
+      }
+    } else {
+      try {
+        category = await classifyCategory(result.title, result.description, llm);
+      } catch (error) {
+        // 분류 실패 시 이번 실행은 건너뛴다 — 저장하지 않았으므로 다음 실행에서 신규로 재시도
+        report.classifyFailed++;
+        if (isRateLimitError(error) && !breaker.tripped) {
+          breaker.tripped = true;
+          console.error(
+            `[scrape-jobs] LLM rate limit hit — skipping LLM classification for the rest of this run (keyword-only)`,
+          );
+        }
+        console.error(
+          `[scrape-jobs] ${company.name} :: category classification failed for "${result.title}":`,
+          error,
+        );
+        continue;
+      }
     }
     if (category === 'non_dev') {
       report.discarded.push(result.title);
@@ -143,8 +170,9 @@ async function main(): Promise<void> {
       console.log(`[scrape-jobs] skipped ${skipped} auto-created companies without scrape config`);
     }
 
+    const breaker: RateLimitBreaker = { tripped: false };
     const settled = await Promise.allSettled(
-      targets.map((company) => scrapeCompany(db, llm, company)),
+      targets.map((company) => scrapeCompany(db, llm, company, breaker)),
     );
 
     const failures: { company: string; reason: unknown }[] = [];

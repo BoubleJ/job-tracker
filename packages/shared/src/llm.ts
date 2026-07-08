@@ -6,7 +6,9 @@ import { z } from 'zod';
  * - 코드가 특정 업체를 알지 못하도록 base URL·API 키·모델명은 전부 env 주입
  * - Structured Outputs: Zod 스키마 → z.toJSONSchema()로 json_schema 요청 구성,
  *   응답은 동일한 Zod 스키마로 파싱 (스키마 단일 소스)
- * - 429(rate limit): 지수 백오프 재시도 (Retry-After 헤더가 있으면 우선)
+ * - 429(rate limit): 지수 백오프 재시도 (Retry-After 헤더가 있으면 우선).
+ *   단 Retry-After가 60초를 넘으면(일일 한도 소진 등) 기다려도 소용없으므로 즉시 실패 —
+ *   cron 워커가 타임아웃까지 대기만 하다 취소되는 것을 막는다 (호출부는 다음 실행에서 재시도)
  * - 파싱 실패(비JSON/스키마 불일치): 새 completion으로 1회 재시도 후 에러
  */
 
@@ -119,6 +121,9 @@ export async function completeStructured<T>(
   );
 }
 
+/** 이보다 긴 Retry-After는 일일 한도류 소진으로 보고 재시도하지 않는다 */
+const MAX_RETRY_AFTER_SEC = 60;
+
 async function requestCompletion(args: {
   fetchImpl: typeof fetch;
   url: string;
@@ -139,6 +144,12 @@ async function requestCompletion(args: {
     });
     if (res.status === 429 && attempt < maxRetries) {
       const retryAfterSec = Number(res.headers.get('retry-after'));
+      if (retryAfterSec > MAX_RETRY_AFTER_SEC) {
+        const detail = await res.text().catch(() => '');
+        throw new Error(
+          `LLM request failed: 429 (retry-after ${retryAfterSec}s exceeds ${MAX_RETRY_AFTER_SEC}s, giving up) ${detail.slice(0, 500)}`,
+        );
+      }
       const delayMs =
         Number.isFinite(retryAfterSec) && retryAfterSec > 0
           ? retryAfterSec * 1000
