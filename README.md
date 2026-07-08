@@ -75,16 +75,16 @@ pnpm install
 2. Project Settings → Database에서 커넥션 문자열을 복사한다.
    워커·마이그레이션에는 **Transaction pooler (pgbouncer, 6543 포트)** URL을 그대로 써도 된다 —
    `packages/db`의 클라이언트가 `prepare: false`로 pgbouncer에 대응한다.
-3. 루트에 `.env`를 만들고 채운다 (`.env.example` 참고):
+3. 앱별로 `.env`를 만들고 채운다 (필요 변수는 아래 4번 표 참고):
+
+   - `apps/web/.env` — `DATABASE_URL`
+   - `apps/worker/.env` — `DATABASE_URL` + `GMAIL_*` + `LLM_*`
+   - `packages/db/.env` — `DATABASE_URL` (drizzle-kit용)
+
+4. 스키마 반영 (`packages/db/.env`의 `DATABASE_URL`을 자동으로 읽는다):
 
    ```bash
-   cp .env.example .env
-   ```
-
-4. 스키마 반영:
-
-   ```bash
-   DATABASE_URL='postgres://...' pnpm --filter @job-tracker/db db:push
+   pnpm --filter @job-tracker/db db:push
    # 또는 SQL 마이그레이션 파일 생성: pnpm --filter @job-tracker/db db:generate
    ```
 
@@ -97,15 +97,16 @@ pnpm install
 3. 토큰 발급 스크립트 실행 (브라우저가 열리고 동의하면 refresh token이 출력된다):
 
    ```bash
-   GMAIL_CLIENT_ID=... GMAIL_CLIENT_SECRET=... \
-     pnpm --filter @job-tracker/worker exec tsx scripts/gmail-auth.ts
+   # apps/worker/.env에 GMAIL_CLIENT_ID/SECRET을 채운 뒤
+   pnpm --filter @job-tracker/worker gmail-auth
    ```
 
-4. 출력된 refresh token을 `.env`의 `GMAIL_REFRESH_TOKEN`과 GitHub Secrets에 저장한다.
+4. 출력된 refresh token을 `apps/worker/.env`의 `GMAIL_REFRESH_TOKEN`과 GitHub Secrets에 저장한다.
 
 ### 4. 환경변수
 
-`.env.example`이 전체 목록이다.
+`.env`는 앱 디렉토리별로 둔다 (Next.js·워커·drizzle-kit 모두 자기 디렉토리의 `.env`만 읽는다).
+아래 표가 전체 목록이다.
 
 | 변수 | 사용처 | 설명 |
 |---|---|---|

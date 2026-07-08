@@ -4,10 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "sync-gmail": "tsx src/sync-gmail.ts",
-    "scrape-jobs": "tsx src/scrape-jobs.ts",
-    "gmail-auth": "tsx scripts/gmail-auth.ts",
-    "eval-classify": "tsx scripts/eval-classify.ts",
+    "sync-gmail": "tsx --env-file-if-exists=.env src/sync-gmail.ts",
+    "scrape-jobs": "tsx --env-file-if-exists=.env src/scrape-jobs.ts",
+    "gmail-auth": "tsx --env-file-if-exists=.env scripts/gmail-auth.ts",
+    "eval-classify": "tsx --env-file-if-exists=.env scripts/eval-classify.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
   },
