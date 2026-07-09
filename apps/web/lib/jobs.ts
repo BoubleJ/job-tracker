@@ -35,6 +35,29 @@ export const DUPLICATE_POLICY_LABELS: Record<KnownPolicy, string> = {
   conditional: "중복지원 조건부",
 };
 
+/**
+ * policyNote에서 재지원 대기 개월 수를 뽑는다 (예: "재지원은 6개월 이후 가능, ..." → 6).
+ * note는 "재지원…, 중복지원…" 절이 쉼표로 이어진 자유 텍스트이므로 재지원 절만 보고 찾는다.
+ * 못 찾으면 null — 호출부가 일반 "재지원 조건부" 라벨로 폴백한다.
+ */
+export function reapplyPeriodMonths(policyNote?: string | null): number | null {
+  const clause = policyNote?.split(",").find((part) => part.includes("재지원"));
+  const matched = clause?.match(/(\d+)\s*개월/);
+  return matched?.[1] ? Number(matched[1]) : null;
+}
+
+/** 재지원 배지 문구 — conditional이고 기간을 알면 "6개월 후 재지원가능"으로 구체화한다 */
+export function reapplyPolicyLabel(
+  policy: KnownPolicy,
+  policyNote?: string | null,
+): string {
+  if (policy !== "conditional") return REAPPLY_POLICY_LABELS[policy];
+  const months = reapplyPeriodMonths(policyNote);
+  return months === null
+    ? REAPPLY_POLICY_LABELS.conditional
+    : `${months}개월 후 재지원가능`;
+}
+
 export function policyBadgeVariant(policy: KnownPolicy): BadgeVariant {
   switch (policy) {
     case "allowed":

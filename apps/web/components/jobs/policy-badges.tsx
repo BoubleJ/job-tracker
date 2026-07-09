@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   DUPLICATE_POLICY_LABELS,
   policyBadgeVariant,
-  REAPPLY_POLICY_LABELS,
+  reapplyPolicyLabel,
 } from "@/lib/jobs";
 
 /** 회사 재지원/중복지원 정책 배지 — unknown이면 표시하지 않는다 (스펙 5-2) */
@@ -27,7 +27,7 @@ export function PolicyBadges({
           variant={policyBadgeVariant(reapplyPolicy)}
           title={policyNote ?? undefined}
         >
-          {REAPPLY_POLICY_LABELS[reapplyPolicy]}
+          {reapplyPolicyLabel(reapplyPolicy, policyNote)}
         </Badge>
       ) : null}
       {duplicateApplyPolicy !== "unknown" ? (

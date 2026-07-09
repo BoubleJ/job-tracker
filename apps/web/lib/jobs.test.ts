@@ -7,6 +7,8 @@ import {
   formatDday,
   isNewPosting,
   parseJobsSearchParams,
+  reapplyPeriodMonths,
+  reapplyPolicyLabel,
 } from "./jobs";
 
 describe("D-day", () => {
@@ -92,5 +94,46 @@ describe("filterJobPostings", () => {
     expect(
       filterJobPostings([...postings], { ...all, companyId: "c2" }),
     ).toHaveLength(1);
+  });
+});
+
+describe("재지원 정책 라벨", () => {
+  it("conditional + note의 개월 수 → 구체 라벨", () => {
+    expect(
+      reapplyPolicyLabel("conditional", "재지원은 6개월 이후 가능, 중복지원 가능"),
+    ).toBe("6개월 후 재지원가능");
+    expect(
+      reapplyPolicyLabel("conditional", "재지원은 3개월 이후 가능, 중복지원 가능"),
+    ).toBe("3개월 후 재지원가능");
+  });
+
+  it("'불합격 6개월 이후' 처럼 수식어가 붙어도 개월 수를 찾는다", () => {
+    expect(
+      reapplyPolicyLabel(
+        "conditional",
+        "재지원은 불합격 6개월 이후 가능, 중복지원 불가",
+      ),
+    ).toBe("6개월 후 재지원가능");
+  });
+
+  it("중복지원 절의 개월 수는 재지원 라벨에 쓰지 않는다", () => {
+    expect(
+      reapplyPolicyLabel("conditional", "재지원 조건 안내 없음, 중복지원은 3개월 이후"),
+    ).toBe("재지원 조건부");
+  });
+
+  it("note가 없거나 기간이 없으면 일반 조건부 라벨로 폴백", () => {
+    expect(reapplyPolicyLabel("conditional", null)).toBe("재지원 조건부");
+    expect(reapplyPolicyLabel("conditional", "재지원은 별도 문의")).toBe("재지원 조건부");
+  });
+
+  it("conditional이 아니면 note를 무시한다", () => {
+    expect(reapplyPolicyLabel("allowed", "재지원은 6개월 이후 가능")).toBe("재지원 가능");
+    expect(reapplyPolicyLabel("not_allowed", null)).toBe("재지원 불가");
+  });
+
+  it("reapplyPeriodMonths 단독", () => {
+    expect(reapplyPeriodMonths("재지원은 12개월 이후 가능")).toBe(12);
+    expect(reapplyPeriodMonths(undefined)).toBeNull();
   });
 });
