@@ -7,6 +7,7 @@ import {
   EXCLUDED_CATEGORIES,
   classifyByKeywords,
   classifyCategory,
+  isQuotaExhausted,
   type CategoryLlmOptions,
 } from './classify-category';
 
@@ -17,19 +18,17 @@ import {
  *    저장하지 않고 제목을 로그에 남김
  * 3. content_hash 기준 upsert, 기존 공고는 last_seen_at 갱신
  * 4. 이번 실행에서 발견되지 않은 기존 open 공고는 closed 처리
- * 5. 회사 단위 실패 격리 (Promise.allSettled), 실패 요약 출력
+ * 5. 회사 단위 실패 격리 (동시 실행 수 COMPANY_CONCURRENCY로 제한), 실패 요약 출력
  *
- * LLM rate limit 서킷브레이커: 분류가 429로 실패하면 이번 실행의 남은 LLM 분류를
- * 전부 건너뛴다 (회사 간 공유). 한도 소진 상태에서 공고마다 재시도·대기를 반복하다
- * 잡 타임아웃으로 통째로 취소되는 것을 막는다. 건너뛴 공고는 다음 실행에서 신규로 재시도.
+ * LLM rate limit 서킷브레이커: 분류가 "한도 소진"(LlmRateLimitError.exhausted) 429로 실패하면
+ * 이번 실행의 남은 LLM 분류를 전부 건너뛴다 (회사 간 공유). 한도 소진 상태에서 공고마다
+ * 재시도·대기를 반복하다 잡 타임아웃으로 통째로 취소되는 것을 막는다.
+ * 일시적 스로틀 429는 브레이커를 내리지 않는다 — 해당 공고만 이번 실행에서 건너뛴다.
+ * 건너뛴 공고는 저장되지 않았으므로 다음 실행에서 신규로 재시도된다.
  */
 
 interface RateLimitBreaker {
   tripped: boolean;
-}
-
-function isRateLimitError(error: unknown): boolean {
-  return error instanceof Error && error.message.includes('LLM request failed: 429');
 }
 
 interface CompanyReport {
@@ -106,10 +105,10 @@ async function scrapeCompany(
       } catch (error) {
         // 분류 실패 시 이번 실행은 건너뛴다 — 저장하지 않았으므로 다음 실행에서 신규로 재시도
         report.classifyFailed++;
-        if (isRateLimitError(error) && !breaker.tripped) {
+        if (isQuotaExhausted(error) && !breaker.tripped) {
           breaker.tripped = true;
           console.error(
-            `[scrape-jobs] LLM rate limit hit — skipping LLM classification for the rest of this run (keyword-only)`,
+            `[scrape-jobs] LLM quota exhausted — skipping LLM classification for the rest of this run (keyword-only)`,
           );
         }
         console.error(
@@ -159,6 +158,36 @@ async function scrapeCompany(
   return report;
 }
 
+/**
+ * 회사 동시 실행 수. 무제한으로 돌리면 모든 회사가 같은 LLM 분당 토큰 한도를 두고 경합해
+ * 백오프 재시도가 소진되고, 몇 초면 풀릴 스로틀이 분류 실패로 굳는다.
+ */
+const COMPANY_CONCURRENCY = 4;
+
+/** Promise.allSettled와 동일한 순서·형태의 결과를 반환하되 동시 실행 수를 제한한다. */
+async function allSettledLimited<T, R>(
+  items: readonly T[],
+  limit: number,
+  task: (item: T) => Promise<R>,
+): Promise<PromiseSettledResult<R>[]> {
+  const results = new Array<PromiseSettledResult<R>>(items.length);
+  let cursor = 0;
+  const worker = async (): Promise<void> => {
+    for (let index = cursor++; index < items.length; index = cursor++) {
+      const item = items[index] as T;
+      try {
+        results[index] = { status: 'fulfilled', value: await task(item) };
+      } catch (reason) {
+        results[index] = { status: 'rejected', reason };
+      }
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(limit, items.length) }, () => worker()),
+  );
+  return results;
+}
+
 async function main(): Promise<void> {
   const llmEnv = loadLlmEnv();
   const llm: CategoryLlmOptions = {
@@ -177,8 +206,8 @@ async function main(): Promise<void> {
     }
 
     const breaker: RateLimitBreaker = { tripped: false };
-    const settled = await Promise.allSettled(
-      targets.map((company) => scrapeCompany(db, llm, company, breaker)),
+    const settled = await allSettledLimited(targets, COMPANY_CONCURRENCY, (company) =>
+      scrapeCompany(db, llm, company, breaker),
     );
 
     const failures: { company: string; reason: unknown }[] = [];

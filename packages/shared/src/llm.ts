@@ -9,8 +9,28 @@ import { z } from 'zod';
  * - 429(rate limit): 지수 백오프 재시도 (Retry-After 헤더가 있으면 우선).
  *   단 Retry-After가 60초를 넘으면(일일 한도 소진 등) 기다려도 소용없으므로 즉시 실패 —
  *   cron 워커가 타임아웃까지 대기만 하다 취소되는 것을 막는다 (호출부는 다음 실행에서 재시도)
+ * - 429는 LlmRateLimitError로 던지며 exhausted 플래그로 두 종류를 구분한다.
+ *   Groq 기준 분당 토큰(TPM) 초과는 몇 초 뒤 풀리지만 일일 토큰(TPD) 초과는 그렇지 않은데,
+ *   둘 다 상태코드가 429라 호출부가 메시지로는 구별할 수 없다 (스로틀 vs 소진).
  * - 파싱 실패(비JSON/스키마 불일치): 새 completion으로 1회 재시도 후 에러
  */
+
+/**
+ * 429 전용 에러.
+ * exhausted=true  — 한도 소진(Retry-After가 임계를 초과). 이번 실행에서 재시도해도 무의미.
+ * exhausted=false — 일시적 스로틀. 재시도 예산을 다 썼을 뿐이며 곧 풀린다.
+ */
+export class LlmRateLimitError extends Error {
+  readonly exhausted: boolean;
+  readonly retryAfterSec: number | null;
+
+  constructor(message: string, exhausted: boolean, retryAfterSec: number | null) {
+    super(message);
+    this.name = 'LlmRateLimitError';
+    this.exhausted = exhausted;
+    this.retryAfterSec = retryAfterSec;
+  }
+}
 
 export interface LlmEnv {
   baseUrl: string;
@@ -68,6 +88,8 @@ export interface CompleteStructuredOptions<T> {
   maxRateLimitRetries?: number;
   /** 백오프 기본 지연 ms (기본 1000; attempt마다 2배) */
   baseDelayMs?: number;
+  /** 429 백오프로 잘 수 있는 총 시간 상한 ms (기본 60000) */
+  maxTotalBackoffMs?: number;
   /** 테스트용 fetch 주입 */
   fetchImpl?: typeof fetch;
 }
@@ -109,6 +131,7 @@ export async function completeStructured<T>(
       body,
       maxRetries: options.maxRateLimitRetries ?? 3,
       baseDelayMs: options.baseDelayMs ?? 1000,
+      maxTotalBackoffMs: options.maxTotalBackoffMs ?? DEFAULT_MAX_TOTAL_BACKOFF_MS,
     });
     try {
       return options.schema.parse(JSON.parse(content));
@@ -124,6 +147,9 @@ export async function completeStructured<T>(
 /** 이보다 긴 Retry-After는 일일 한도류 소진으로 보고 재시도하지 않는다 */
 const MAX_RETRY_AFTER_SEC = 60;
 
+/** 한 요청이 429 백오프로 잘 수 있는 총 시간 상한 (재시도 횟수와 별개의 예산) */
+const DEFAULT_MAX_TOTAL_BACKOFF_MS = 60_000;
+
 async function requestCompletion(args: {
   fetchImpl: typeof fetch;
   url: string;
@@ -131,8 +157,11 @@ async function requestCompletion(args: {
   body: string;
   maxRetries: number;
   baseDelayMs: number;
+  maxTotalBackoffMs: number;
 }): Promise<string> {
-  const { fetchImpl, url, apiKey, body, maxRetries, baseDelayMs } = args;
+  const { fetchImpl, url, apiKey, body, maxRetries, baseDelayMs, maxTotalBackoffMs } =
+    args;
+  let sleptMs = 0;
   for (let attempt = 0; ; attempt++) {
     const res = await fetchImpl(url, {
       method: 'POST',
@@ -142,19 +171,28 @@ async function requestCompletion(args: {
       },
       body,
     });
-    if (res.status === 429 && attempt < maxRetries) {
-      const retryAfterSec = Number(res.headers.get('retry-after'));
-      if (retryAfterSec > MAX_RETRY_AFTER_SEC) {
-        const detail = await res.text().catch(() => '');
-        throw new Error(
+    if (res.status === 429) {
+      const header = Number(res.headers.get('retry-after'));
+      const retryAfterSec = Number.isFinite(header) && header > 0 ? header : null;
+      const detail = await res.text().catch(() => '');
+      if (retryAfterSec !== null && retryAfterSec > MAX_RETRY_AFTER_SEC) {
+        throw new LlmRateLimitError(
           `LLM request failed: 429 (retry-after ${retryAfterSec}s exceeds ${MAX_RETRY_AFTER_SEC}s, giving up) ${detail.slice(0, 500)}`,
+          true,
+          retryAfterSec,
         );
       }
       const delayMs =
-        Number.isFinite(retryAfterSec) && retryAfterSec > 0
-          ? retryAfterSec * 1000
-          : baseDelayMs * 2 ** attempt;
+        retryAfterSec !== null ? retryAfterSec * 1000 : baseDelayMs * 2 ** attempt;
+      if (attempt >= maxRetries || sleptMs + delayMs > maxTotalBackoffMs) {
+        throw new LlmRateLimitError(
+          `LLM request failed: 429 (throttled; gave up after ${attempt + 1} attempts, waited ${sleptMs}ms) ${detail.slice(0, 500)}`,
+          false,
+          retryAfterSec,
+        );
+      }
       await sleep(delayMs);
+      sleptMs += delayMs;
       continue;
     }
     if (!res.ok) {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { z } from 'zod';
-import { completeStructured, loadLlmEnv } from './llm';
+import { completeStructured, LlmRateLimitError, loadLlmEnv } from './llm';
 
 const resultSchema = z.object({ company: z.string(), confidence: z.number() });
 
@@ -67,6 +67,51 @@ describe('completeStructured', () => {
       completeStructured({ ...baseOptions, fetchImpl, maxRateLimitRetries: 2 }),
     ).rejects.toThrow(/429/);
     expect(fetchImpl).toHaveBeenCalledTimes(3); // 최초 1회 + 재시도 2회
+  });
+
+  it('재시도 소진 429는 일시적 스로틀로 표시한다 (exhausted=false)', async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response('rate limited', { status: 429, headers: { 'retry-after': '4' } }),
+      );
+    const error = await completeStructured({
+      ...baseOptions,
+      fetchImpl,
+      maxRateLimitRetries: 0,
+    }).catch((e: unknown) => e);
+    expect(error).toBeInstanceOf(LlmRateLimitError);
+    expect((error as LlmRateLimitError).exhausted).toBe(false);
+    expect((error as LlmRateLimitError).retryAfterSec).toBe(4);
+  });
+
+  it('Retry-After가 임계를 넘으면 한도 소진으로 표시하고 재시도하지 않는다', async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response('daily limit', { status: 429, headers: { 'retry-after': '276' } }),
+      );
+    const error = await completeStructured({ ...baseOptions, fetchImpl }).catch(
+      (e: unknown) => e,
+    );
+    expect(error).toBeInstanceOf(LlmRateLimitError);
+    expect((error as LlmRateLimitError).exhausted).toBe(true);
+    expect(fetchImpl).toHaveBeenCalledTimes(1); // 재시도 없이 즉시 포기
+  });
+
+  it('총 백오프 예산을 넘기면 재시도 횟수가 남아도 포기한다', async () => {
+    const fetchImpl = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response('rate limited', { status: 429 }));
+    const error = await completeStructured({
+      ...baseOptions,
+      fetchImpl,
+      baseDelayMs: 10,
+      maxRateLimitRetries: 10,
+      maxTotalBackoffMs: 25, // 10ms + 20ms(누적 30ms) → 두 번째 재시도에서 예산 초과
+    }).catch((e: unknown) => e);
+    expect((error as LlmRateLimitError).exhausted).toBe(false);
+    expect(fetchImpl).toHaveBeenCalledTimes(2); // 최초 1회 + 10ms 수면 후 1회
   });
 
   it('파싱 실패 시 새 completion으로 1회 재시도한다', async () => {

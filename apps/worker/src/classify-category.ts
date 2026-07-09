@@ -1,5 +1,10 @@
 import { z } from 'zod';
-import { CATEGORIES, completeStructured, type Category } from '@job-tracker/shared';
+import {
+  CATEGORIES,
+  LlmRateLimitError,
+  completeStructured,
+  type Category,
+} from '@job-tracker/shared';
 
 /**
  * 직군 분류기 (스펙 7-7): 개발 직군만 수집하기 위한 2단 하이브리드.
@@ -17,6 +22,15 @@ export type CategoryDecision = Category | 'non_dev';
  * 분류기는 그대로 qa를 판정하고(오분류 진단 가능), 저장 여부는 오케스트레이터가 결정한다.
  */
 export const EXCLUDED_CATEGORIES: ReadonlySet<Category> = new Set(['qa']);
+
+/**
+ * 오케스트레이터가 서킷브레이커를 내려야 하는 429인지 판정한다.
+ * 일시적 스로틀(분당 토큰 초과 등)은 몇 초 뒤 풀리므로 브레이커를 내리지 않는다 —
+ * 내리면 남은 회사 전부가 이번 실행 내내 키워드 분류만 쓰게 된다.
+ */
+export function isQuotaExhausted(error: unknown): boolean {
+  return error instanceof LlmRateLimitError && error.exhausted;
+}
 
 type KeywordPattern = string | RegExp; // string은 substring 매칭 (한국어는 \b가 안 통함), RegExp는 word boundary용
 

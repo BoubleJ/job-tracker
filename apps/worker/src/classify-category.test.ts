@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { classifyByKeywords, classifyCategory, normalizeTitle } from './classify-category';
+import { LlmRateLimitError } from '@job-tracker/shared';
+import {
+  EXCLUDED_CATEGORIES,
+  classifyByKeywords,
+  classifyCategory,
+  isQuotaExhausted,
+  normalizeTitle,
+} from './classify-category';
 
 describe('normalizeTitle', () => {
   it('소문자화 + 하이픈/슬래시를 공백으로 정규화한다', () => {
@@ -117,5 +124,30 @@ describe('classifyCategory (LLM 폴백)', () => {
       llmOptions({ category: 'non_dev' }),
     );
     expect(result).toBe('non_dev');
+  });
+});
+
+describe('EXCLUDED_CATEGORIES', () => {
+  it('qa는 수집 대상에서 제외한다', () => {
+    expect(EXCLUDED_CATEGORIES.has('qa')).toBe(true);
+    expect(EXCLUDED_CATEGORIES.has('backend')).toBe(false);
+  });
+});
+
+describe('isQuotaExhausted', () => {
+  it('한도 소진 429만 브레이커를 내린다', () => {
+    expect(isQuotaExhausted(new LlmRateLimitError('daily', true, 276))).toBe(true);
+  });
+
+  it('일시적 스로틀 429는 브레이커를 내리지 않는다', () => {
+    expect(isQuotaExhausted(new LlmRateLimitError('throttled', false, 4))).toBe(false);
+  });
+
+  it('429가 아닌 에러는 브레이커를 내리지 않는다', () => {
+    expect(isQuotaExhausted(new Error('LLM request failed: 429 (본문에만 429)'))).toBe(
+      false,
+    );
+    expect(isQuotaExhausted(new Error('boom'))).toBe(false);
+    expect(isQuotaExhausted(undefined)).toBe(false);
   });
 });
