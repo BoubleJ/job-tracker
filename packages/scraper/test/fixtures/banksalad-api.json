@@ -1,0 +1,59 @@
+{
+  "jobs": [
+    {
+      "department": "고객경험",
+      "data": [
+        {
+          "id": 91270,
+          "title": "CX Operator (인턴십)",
+          "job": "고객경험",
+          "employmentType": "인턴",
+          "dueDate": null,
+          "url": "https://banksalad.career.greetinghr.com/o/91270",
+          "activatedAtCareerPage": false
+        },
+        {
+          "id": 226655,
+          "title": "CX Manager (민원·상담 업무 담당자)",
+          "job": "고객경험",
+          "employmentType": "정규직",
+          "dueDate": null,
+          "url": "https://banksalad.career.greetinghr.com/o/226655",
+          "activatedAtCareerPage": false
+        }
+      ]
+    },
+    {
+      "department": "테크",
+      "data": [
+        {
+          "id": 91288,
+          "title": "[리더십] CISO (정보보호최고책임자)",
+          "job": "테크",
+          "employmentType": "정규직",
+          "dueDate": null,
+          "url": "https://banksalad.career.greetinghr.com/o/91288",
+          "activatedAtCareerPage": false
+        },
+        {
+          "id": 133706,
+          "title": "[리더십] DevOps Tech Lead (데브옵스 테크 리드)",
+          "job": "테크",
+          "employmentType": "정규직",
+          "dueDate": null,
+          "url": "https://banksalad.career.greetinghr.com/o/133706",
+          "activatedAtCareerPage": false
+        },
+        {
+          "id": 160517,
+          "title": "DevOps Engineer (데브옵스 엔지니어)",
+          "job": "테크",
+          "employmentType": null,
+          "dueDate": null,
+          "url": "https://banksalad.career.greetinghr.com/o/160517",
+          "activatedAtCareerPage": false
+        }
+      ]
+    }
+  ]
+}

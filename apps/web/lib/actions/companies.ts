@@ -5,6 +5,7 @@ import { z } from "zod";
 import { companies } from "@job-tracker/db";
 import {
   assertNever,
+  banksaladConfigSchema,
   greenhouseConfigSchema,
   greetingConfigSchema,
   jobflexConfigSchema,
@@ -69,6 +70,9 @@ function buildScrapeConfig(
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });
+    case "banksalad":
+      // 공고 API가 어댑터에 고정되어 있어 전략별 폼 필드가 없다
+      return banksaladConfigSchema.parse({ policyUrl });
     case "llm":
       return llmConfigSchema.parse({
         url: optionalField(formData, "configUrl"),

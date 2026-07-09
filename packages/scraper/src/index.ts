@@ -8,6 +8,7 @@ export {
   parseNinehireResponse,
   extractNinehireCompanyId,
 } from './adapters/ninehire';
+export { scrapeBanksalad, parseBanksaladResponse } from './adapters/banksalad';
 export { scrapeLlm, jobExtractionSchema, isProbablyCsr } from './adapters/llm';
 export {
   extractApplyPolicy,

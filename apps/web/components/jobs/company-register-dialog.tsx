@@ -36,6 +36,7 @@ const STRATEGY_LABELS: Record<ScrapeStrategy, string> = {
   lever: "Lever",
   greenhouse: "Greenhouse",
   jobflex: "JOBFLEX (recruiter.co.kr)",
+  banksalad: "뱅크샐러드 (corp.banksalad.com)",
   llm: "자체 채용페이지 (LLM 추출)",
 };
 

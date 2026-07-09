@@ -48,6 +48,12 @@ export const jobflexConfigSchema = z.object({
 });
 export type JobflexConfig = z.infer<typeof jobflexConfigSchema>;
 
+export const banksaladConfigSchema = z.object({
+  /** 공고 목록 API가 어댑터에 고정되어 있어 별도 설정이 없다 (careers_url은 사람이 보는 용도) */
+  policyUrl: policyUrlField,
+});
+export type BanksaladConfig = z.infer<typeof banksaladConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -64,6 +70,7 @@ export type ScrapeConfigData =
   | GreetingConfig
   | NinehireConfig
   | JobflexConfig
+  | BanksaladConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -72,6 +79,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   greetingConfigSchema.extend({ strategy: z.literal('greeting') }),
   ninehireConfigSchema.extend({ strategy: z.literal('ninehire') }),
   jobflexConfigSchema.extend({ strategy: z.literal('jobflex') }),
+  banksaladConfigSchema.extend({ strategy: z.literal('banksalad') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

@@ -41,6 +41,8 @@ export const SCRAPE_STRATEGIES = [
   'lever',
   'greenhouse',
   'jobflex',
+  /** 뱅크샐러드 자체 채용페이지 (greeting 백엔드지만 채용페이지가 꺼져 있어 전용 API가 필요) */
+  'banksalad',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];
