@@ -12,6 +12,12 @@ import { CATEGORIES, completeStructured, type Category } from '@job-tracker/shar
 
 export type CategoryDecision = Category | 'non_dev';
 
+/**
+ * 개발 직군으로 분류되지만 수집하지 않는 카테고리.
+ * 분류기는 그대로 qa를 판정하고(오분류 진단 가능), 저장 여부는 오케스트레이터가 결정한다.
+ */
+export const EXCLUDED_CATEGORIES: ReadonlySet<Category> = new Set(['qa']);
+
 type KeywordPattern = string | RegExp; // string은 substring 매칭 (한국어는 \b가 안 통함), RegExp는 word boundary용
 
 const KEYWORD_RULES: ReadonlyArray<{

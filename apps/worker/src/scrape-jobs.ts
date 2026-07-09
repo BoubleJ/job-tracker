@@ -3,12 +3,18 @@ import { runAdapter, type ScrapeResult } from '@job-tracker/scraper';
 import { loadLlmEnv, parseScrapeConfig } from '@job-tracker/shared';
 import { contentHash } from '@job-tracker/shared/content-hash';
 import { companies, createDb, jobPostings, type Company, type Db } from '@job-tracker/db';
-import { classifyByKeywords, classifyCategory, type CategoryLlmOptions } from './classify-category';
+import {
+  EXCLUDED_CATEGORIES,
+  classifyByKeywords,
+  classifyCategory,
+  type CategoryLlmOptions,
+} from './classify-category';
 
 /**
  * 공고 스크래핑 오케스트레이터 (스펙 7-4).
  * 1. companies 순회, scrape_strategy로 registry에서 어댑터 실행
- * 2. 신규 공고(content_hash 기준)만 직군 분류(7-7), 비개발은 저장하지 않고 제목을 로그에 남김
+ * 2. 신규 공고(content_hash 기준)만 직군 분류(7-7), 비개발·수집제외 직군(EXCLUDED_CATEGORIES)은
+ *    저장하지 않고 제목을 로그에 남김
  * 3. content_hash 기준 upsert, 기존 공고는 last_seen_at 갱신
  * 4. 이번 실행에서 발견되지 않은 기존 open 공고는 closed 처리
  * 5. 회사 단위 실패 격리 (Promise.allSettled), 실패 요약 출력
@@ -113,8 +119,8 @@ async function scrapeCompany(
         continue;
       }
     }
-    if (category === 'non_dev') {
-      report.discarded.push(result.title);
+    if (category === 'non_dev' || EXCLUDED_CATEGORIES.has(category)) {
+      report.discarded.push(`${result.title} [${category}]`);
       continue;
     }
 
@@ -188,7 +194,7 @@ async function main(): Promise<void> {
         `[scrape-jobs] ${r.company}: found=${r.found} added=${r.added} updated=${r.updated} closed=${r.closed} discarded=${r.discarded.length} classifyFailed=${r.classifyFailed}`,
       );
       for (const title of r.discarded) {
-        console.log(`[scrape-jobs]   discarded non-dev: ${r.company} :: ${title}`);
+        console.log(`[scrape-jobs]   discarded: ${r.company} :: ${title}`);
       }
     }
 
