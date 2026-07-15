@@ -9,6 +9,7 @@
     "gmail-auth": "tsx --env-file-if-exists=.env scripts/gmail-auth.ts",
     "backfill-events": "tsx --env-file-if-exists=.env scripts/backfill-events.ts",
     "prune-old": "tsx --env-file-if-exists=.env scripts/prune-old-applications.ts",
+    "scrape-company": "tsx --env-file-if-exists=.env scripts/scrape-company.ts",
     "eval-classify": "tsx --env-file-if-exists=.env scripts/eval-classify.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
