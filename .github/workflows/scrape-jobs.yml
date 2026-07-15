@@ -2,8 +2,8 @@ name: scrape-jobs
 
 on:
   schedule:
-    # UTC 21:00 = KST 06:00 — 하루 1회, 아침에 전날 갱신분 반영
-    - cron: "0 21 * * *"
+    # UTC 일 21:00 = KST 월 06:00 — 주 1회(매주 월요일 아침) 공고 갱신
+    - cron: "0 21 * * 0"
   workflow_dispatch:
 
 concurrency:
