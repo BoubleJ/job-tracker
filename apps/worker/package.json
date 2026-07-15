@@ -7,6 +7,8 @@
     "sync-gmail": "tsx --env-file-if-exists=.env src/sync-gmail.ts",
     "scrape-jobs": "tsx --env-file-if-exists=.env src/scrape-jobs.ts",
     "gmail-auth": "tsx --env-file-if-exists=.env scripts/gmail-auth.ts",
+    "backfill-events": "tsx --env-file-if-exists=.env scripts/backfill-events.ts",
+    "prune-old": "tsx --env-file-if-exists=.env scripts/prune-old-applications.ts",
     "eval-classify": "tsx --env-file-if-exists=.env scripts/eval-classify.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --passWithNoTests"
