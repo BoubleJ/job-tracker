@@ -4,19 +4,30 @@ import { JobCard } from "@/components/jobs/job-card";
 import { PolicyBadges } from "@/components/jobs/policy-badges";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { AppliedInfo } from "@/lib/applied";
 import { refreshCompanyPolicyAction } from "@/lib/actions/companies";
 
 export type CompanyWithApplications = Company & { applications: Application[] };
+
+/** 지원 이력이 없는 공고용 기본값 */
+const EMPTY_APPLIED_INFO: AppliedInfo = {
+  applied: false,
+  lastApplied: null,
+  reapply: { kind: "unknown" },
+};
 
 /** 기업별 그룹 섹션 — 헤더(정책 배지·재지원 힌트·정책 재확인) + 공고 카드 그리드 */
 export function CompanyGroup({
   company,
   postings,
+  appliedInfoById,
   now,
   today,
 }: {
   company: CompanyWithApplications;
   postings: JobPosting[];
+  /** 공고 id → 지원 이력/재지원 상태 */
+  appliedInfoById: Map<string, AppliedInfo>;
   now: Date;
   today: string;
 }) {
@@ -86,6 +97,7 @@ export function CompanyGroup({
               companyId={company.id}
               companyName={company.name}
               showCompany={false}
+              appliedInfo={appliedInfoById.get(posting.id) ?? EMPTY_APPLIED_INFO}
               now={now}
               today={today}
             />

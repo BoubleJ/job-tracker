@@ -22,6 +22,9 @@ export default function RootLayout({
             <Link href="/jobs" className="text-sm hover:underline">
               채용공고
             </Link>
+            <Link href="/jobs/archive" className="text-sm hover:underline">
+              보관함
+            </Link>
           </nav>
         </header>
         <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>

@@ -9,6 +9,7 @@ import {
   parseJobsSearchParams,
   reapplyPeriodMonths,
   reapplyPolicyLabel,
+  toggleCategory,
 } from "./jobs";
 
 describe("D-day", () => {
@@ -39,61 +40,104 @@ describe("isNewPosting", () => {
 });
 
 describe("searchParams 왕복", () => {
-  it("parse → build 왕복이 보존된다", () => {
-    const sp = { category: "backend", company: "c1", open: "1", view: "flat" };
+  it("parse → build 왕복이 보존된다 (복수 직군)", () => {
+    const sp = {
+      category: "backend,frontend",
+      company: "c1",
+      open: "1",
+      unapplied: "1",
+      view: "flat",
+    };
     const state = parseJobsSearchParams(sp);
     expect(state).toEqual({
-      category: "backend",
+      categories: ["backend", "frontend"],
       companyId: "c1",
       openOnly: true,
+      unappliedOnly: true,
       view: "flat",
     });
     expect(buildJobsHref(state)).toBe(
-      "/jobs?category=backend&company=c1&open=1&view=flat",
+      "/jobs?category=backend%2Cfrontend&company=c1&open=1&unapplied=1&view=flat",
     );
   });
 
-  it("잘못된 값은 기본값으로", () => {
+  it("category가 배열로 와도 파싱하고, 잘못된 값은 제외한다", () => {
+    const state = parseJobsSearchParams({ category: ["backend", "designer"] });
+    expect(state.categories).toEqual(["backend"]);
+  });
+
+  it("기본값(빈 필터)", () => {
     expect(parseJobsSearchParams({ category: "designer", view: "x" })).toEqual({
-      category: "all",
+      categories: [],
       companyId: "all",
       openOnly: false,
+      unappliedOnly: false,
       view: "grouped",
     });
     expect(
       buildJobsHref({
-        category: "all",
+        categories: [],
         companyId: "all",
         openOnly: false,
+        unappliedOnly: false,
         view: "grouped",
       }),
     ).toBe("/jobs");
   });
 });
 
+describe("toggleCategory", () => {
+  it("없으면 추가, 있으면 제거 (순서 보존)", () => {
+    expect(toggleCategory(["backend"], "frontend")).toEqual([
+      "backend",
+      "frontend",
+    ]);
+    expect(toggleCategory(["backend", "frontend"], "backend")).toEqual([
+      "frontend",
+    ]);
+  });
+});
+
 describe("filterJobPostings", () => {
   const postings = [
-    { category: "backend", companyId: "c1", status: "open" },
-    { category: "frontend", companyId: "c1", status: "closed" },
-    { category: "backend", companyId: "c2", status: "closed" },
+    { id: "p1", category: "backend", companyId: "c1", status: "open" },
+    { id: "p2", category: "frontend", companyId: "c1", status: "closed" },
+    { id: "p3", category: "backend", companyId: "c2", status: "closed" },
   ] as const;
 
-  it("카테고리/회사/진행중 조건을 모두 적용", () => {
+  it("직군(복수)/회사/진행중 조건을 모두 적용", () => {
     const all = parseJobsSearchParams({});
     expect(filterJobPostings([...postings], all)).toHaveLength(3);
     expect(
-      filterJobPostings([...postings], { ...all, category: "backend" }),
+      filterJobPostings([...postings], { ...all, categories: ["backend"] }),
     ).toHaveLength(2);
+    // 복수 직군: backend OR frontend → 전부
     expect(
       filterJobPostings([...postings], {
         ...all,
-        category: "backend",
+        categories: ["backend", "frontend"],
+      }),
+    ).toHaveLength(3);
+    expect(
+      filterJobPostings([...postings], {
+        ...all,
+        categories: ["backend"],
         openOnly: true,
       }),
     ).toHaveLength(1);
     expect(
       filterJobPostings([...postings], { ...all, companyId: "c2" }),
     ).toHaveLength(1);
+  });
+
+  it("미지원만 보기: isApplied가 true인 공고를 제외", () => {
+    const all = parseJobsSearchParams({});
+    const appliedIds = new Set(["p1"]);
+    expect(
+      filterJobPostings([...postings], { ...all, unappliedOnly: true }, (p) =>
+        appliedIds.has(p.id),
+      ),
+    ).toHaveLength(2);
   });
 });
 

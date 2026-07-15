@@ -4,16 +4,36 @@ import type { JobPosting } from "@job-tracker/db";
 import { AddApplicationDialog } from "@/components/jobs/add-application-dialog";
 import { CategoryBadgeEditor } from "@/components/jobs/category-badge-editor";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { archiveJobPostingAction } from "@/lib/actions/archive";
+import type { AppliedInfo } from "@/lib/applied";
+import { formatReapplyStatus } from "@/lib/applied";
 import { formatDate } from "@/lib/format";
 import { formatDday, isNewPosting } from "@/lib/jobs";
+import type { BadgeVariant } from "@/components/ui/badge";
 
 /** 공고 카드 — 회사명(옵션)/공고명/D-day/원문 링크/상태·카테고리·NEW 배지 */
+/** 재지원 상태 → 배지 variant */
+function reapplyBadgeVariant(kind: AppliedInfo["reapply"]["kind"]): BadgeVariant {
+  switch (kind) {
+    case "available":
+      return "success";
+    case "waiting":
+      return "warning";
+    case "not_allowed":
+      return "destructive";
+    case "unknown":
+      return "outline";
+  }
+}
+
 export function JobCard({
   posting,
   companyId,
   companyName,
   showCompany,
+  appliedInfo,
   now,
   today,
 }: {
@@ -22,6 +42,8 @@ export function JobCard({
   companyName: string;
   /** 플랫 뷰에서 회사명을 함께 표시 */
   showCompany: boolean;
+  /** 지원 이력/재지원 상태 (스펙 3장) */
+  appliedInfo: AppliedInfo;
   now: Date;
   /** AddApplicationDialog 기본 지원일 (YYYY-MM-DD, KST) */
   today: string;
@@ -29,6 +51,9 @@ export function JobCard({
   const dday = formatDday(posting.deadline, now);
   const isNew = posting.status === "open" && isNewPosting(posting.firstSeenAt, now);
   const closed = posting.status === "closed";
+  const reapplyLabel = appliedInfo.applied
+    ? formatReapplyStatus(appliedInfo.reapply)
+    : null;
 
   return (
     <Card className={closed ? "opacity-60" : undefined}>
@@ -50,6 +75,12 @@ export function JobCard({
         <div className="flex flex-wrap items-center gap-1.5">
           {isNew ? (
             <Badge className="bg-chart-1 text-white">NEW</Badge>
+          ) : null}
+          {appliedInfo.applied ? <Badge variant="secondary">지원함</Badge> : null}
+          {reapplyLabel ? (
+            <Badge variant={reapplyBadgeVariant(appliedInfo.reapply.kind)}>
+              {reapplyLabel}
+            </Badge>
           ) : null}
           <Badge variant={closed ? "outline" : "success"}>
             {closed ? "closed" : "open"}
@@ -78,13 +109,25 @@ export function JobCard({
             ? `마감 ${formatDate(posting.deadline)}`
             : "마감일 없음"}
         </span>
-        <AddApplicationDialog
-          companyId={companyId}
-          companyName={companyName}
-          jobPostingId={posting.id}
-          defaultPosition={posting.title}
-          defaultAppliedAt={today}
-        />
+        <div className="flex items-center gap-2">
+          {posting.archivedAt ? (
+            <Badge variant="outline">보관됨</Badge>
+          ) : (
+            <form action={archiveJobPostingAction}>
+              <input type="hidden" name="jobPostingId" value={posting.id} />
+              <Button type="submit" variant="ghost" size="sm">
+                보관
+              </Button>
+            </form>
+          )}
+          <AddApplicationDialog
+            companyId={companyId}
+            companyName={companyName}
+            jobPostingId={posting.id}
+            defaultPosition={posting.title}
+            defaultAppliedAt={today}
+          />
+        </div>
       </CardFooter>
     </Card>
   );

@@ -5,6 +5,11 @@ import { CompanyGroup } from "@/components/jobs/company-group";
 import { CompanyRegisterDialog } from "@/components/jobs/company-register-dialog";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobsFilter } from "@/components/jobs/jobs-filter";
+import {
+  computePostingAppliedInfo,
+  type AppliedInfo,
+  type MatchableApplication,
+} from "@/lib/applied";
 import { getDb } from "@/lib/db";
 import { todayIsoDate } from "@/lib/format";
 import { filterJobPostings, parseJobsSearchParams } from "@/lib/jobs";
@@ -35,7 +40,39 @@ export default async function JobsPage({
     }),
   ]);
 
-  const filtered = filterJobPostings(postingRows, filterState);
+  const companiesById = new Map(companyRows.map((c) => [c.id, c]));
+
+  // 공고별 지원 이력/재지원 상태 (스펙 3장) — 전체 지원건과 매칭해 계산
+  const allApplications: MatchableApplication[] = companyRows.flatMap((c) =>
+    c.applications.map((a) => ({
+      companyId: a.companyId,
+      jobPostingId: a.jobPostingId,
+      position: a.position,
+      appliedAt: a.appliedAt,
+    })),
+  );
+  const appliedInfoById = new Map<string, AppliedInfo>(
+    postingRows.map((p) => {
+      const company = companiesById.get(p.companyId);
+      const info = computePostingAppliedInfo(
+        p,
+        {
+          reapplyPolicy: company?.reapplyPolicy ?? "unknown",
+          policyNote: company?.policyNote ?? null,
+        },
+        allApplications,
+        now,
+      );
+      return [p.id, info];
+    }),
+  );
+
+  // 미지원 필터(스펙 4장)용 판별 — appliedInfo 재사용
+  const filtered = filterJobPostings(
+    postingRows,
+    filterState,
+    (p) => appliedInfoById.get(p.id)?.applied ?? false,
+  );
   const postingsByCompany = new Map<string, JobPosting[]>();
   for (const posting of filtered) {
     const list = postingsByCompany.get(posting.companyId);
@@ -45,10 +82,12 @@ export default async function JobsPage({
       postingsByCompany.set(posting.companyId, [posting]);
     }
   }
-  const companiesById = new Map(companyRows.map((c) => [c.id, c]));
 
   // 공고 조건 필터가 걸려 있으면 매칭 공고가 있는 회사만, 아니면 (공고 없는 신규 회사 포함) 전부
-  const hasPostingFilter = filterState.category !== "all" || filterState.openOnly;
+  const hasPostingFilter =
+    filterState.categories.length > 0 ||
+    filterState.openOnly ||
+    filterState.unappliedOnly;
   const groupedCompanies = companyRows.filter(
     (company) =>
       (filterState.companyId === "all" || company.id === filterState.companyId) &&
@@ -88,6 +127,7 @@ export default async function JobsPage({
                 key={company.id}
                 company={company}
                 postings={postingsByCompany.get(company.id) ?? []}
+                appliedInfoById={appliedInfoById}
                 now={now}
                 today={today}
               />
@@ -109,6 +149,13 @@ export default async function JobsPage({
                 companyId={posting.companyId}
                 companyName={company?.name ?? "알 수 없는 회사"}
                 showCompany
+                appliedInfo={
+                  appliedInfoById.get(posting.id) ?? {
+                    applied: false,
+                    lastApplied: null,
+                    reapply: { kind: "unknown" },
+                  }
+                }
                 now={now}
                 today={today}
               />

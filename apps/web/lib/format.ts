@@ -30,6 +30,21 @@ export function formatDateTime(date: Date): string {
   return dateTimeFormatter.format(date);
 }
 
+/** timestamptz → 'YYYY-MM-DDTHH:mm' (KST) — datetime-local input 기본값용 */
+export function toKstDatetimeLocal(date: Date): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Seoul",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
+  return `${get("year")}-${get("month")}-${get("day")}T${get("hour")}:${get("minute")}`;
+}
+
 /** 오늘 날짜의 'YYYY-MM-DD' (KST) — date input 기본값용 */
 export function todayIsoDate(now: Date = new Date()): string {
   const formatted = new Intl.DateTimeFormat("en-CA", {

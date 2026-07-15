@@ -74,48 +74,82 @@ export function policyBadgeVariant(policy: KnownPolicy): BadgeVariant {
 export type JobsView = "grouped" | "flat";
 
 export type JobsFilterState = {
-  category: Category | "all";
+  /** 복수 직군 선택 (빈 배열 = 전체) — 스펙 2장 */
+  categories: Category[];
   companyId: string | "all";
   openOnly: boolean;
+  /** 아직 지원하지 않은 공고만 보기 — 스펙 4장 */
+  unappliedOnly: boolean;
   view: JobsView;
 };
+
+/** searchParams의 category 값(문자열 또는 배열, 쉼표 구분 허용)을 Category[]로 파싱 */
+function parseCategories(
+  raw: string | string[] | undefined,
+): Category[] {
+  const tokens = (Array.isArray(raw) ? raw : raw ? [raw] : []).flatMap((v) =>
+    v.split(","),
+  );
+  const valid = tokens.filter((t): t is Category =>
+    (CATEGORIES as readonly string[]).includes(t),
+  );
+  // 중복 제거 (선택 순서 보존)
+  return [...new Set(valid)];
+}
 
 export function parseJobsSearchParams(
   sp: Record<string, string | string[] | undefined>,
 ): JobsFilterState {
-  const category =
-    typeof sp.category === "string" &&
-    (CATEGORIES as readonly string[]).includes(sp.category)
-      ? (sp.category as Category)
-      : "all";
   const companyId =
     typeof sp.company === "string" && sp.company.length > 0 ? sp.company : "all";
   return {
-    category,
+    categories: parseCategories(sp.category),
     companyId,
     openOnly: sp.open === "1",
+    unappliedOnly: sp.unapplied === "1",
     view: sp.view === "flat" ? "flat" : "grouped",
   };
 }
 
 export function buildJobsHref(state: JobsFilterState): string {
   const params = new URLSearchParams();
-  if (state.category !== "all") params.set("category", state.category);
+  if (state.categories.length > 0)
+    params.set("category", state.categories.join(","));
   if (state.companyId !== "all") params.set("company", state.companyId);
   if (state.openOnly) params.set("open", "1");
+  if (state.unappliedOnly) params.set("unapplied", "1");
   if (state.view !== "grouped") params.set("view", state.view);
   const qs = params.toString();
   return qs ? `/jobs?${qs}` : "/jobs";
 }
 
+/** 칩 토글 — 선택돼 있으면 제거, 없으면 추가한 새 배열 반환 (순수) */
+export function toggleCategory(
+  categories: readonly Category[],
+  category: Category,
+): Category[] {
+  return categories.includes(category)
+    ? categories.filter((c) => c !== category)
+    : [...categories, category];
+}
+
+/**
+ * 공고 필터 (직군 복수/회사/진행중/미지원).
+ * 지원여부는 공고 필드만으로 알 수 없으므로 isApplied 판별 함수를 주입받는다 (기본: 항상 미지원).
+ */
 export function filterJobPostings<
   T extends { category: Category; companyId: string; status: JobPostingStatus },
->(postings: readonly T[], state: JobsFilterState): T[] {
+>(
+  postings: readonly T[],
+  state: JobsFilterState,
+  isApplied: (posting: T) => boolean = () => false,
+): T[] {
   return postings.filter(
     (p) =>
-      (state.category === "all" || p.category === state.category) &&
+      (state.categories.length === 0 || state.categories.includes(p.category)) &&
       (state.companyId === "all" || p.companyId === state.companyId) &&
-      (!state.openOnly || p.status === "open"),
+      (!state.openOnly || p.status === "open") &&
+      (!state.unappliedOnly || !isApplied(p)),
   );
 }
 
