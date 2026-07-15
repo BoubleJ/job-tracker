@@ -2,11 +2,11 @@ import { ExternalLinkIcon } from "lucide-react";
 import type { JobPosting } from "@job-tracker/db";
 
 import { AddApplicationDialog } from "@/components/jobs/add-application-dialog";
+import { ArchiveButton } from "@/components/jobs/archive-button";
 import { CategoryBadgeEditor } from "@/components/jobs/category-badge-editor";
+import { JobPostingEditDialog } from "@/components/jobs/job-posting-edit-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { archiveJobPostingAction } from "@/lib/actions/archive";
 import type { AppliedInfo } from "@/lib/applied";
 import { formatReapplyStatus } from "@/lib/applied";
 import { formatDate } from "@/lib/format";
@@ -110,16 +110,20 @@ export function JobCard({
             : "마감일 없음"}
         </span>
         <div className="flex items-center gap-2">
-          {posting.archivedAt ? (
-            <Badge variant="outline">보관됨</Badge>
-          ) : (
-            <form action={archiveJobPostingAction}>
-              <input type="hidden" name="jobPostingId" value={posting.id} />
-              <Button type="submit" variant="ghost" size="sm">
-                보관
-              </Button>
-            </form>
-          )}
+          <JobPostingEditDialog
+            posting={{
+              id: posting.id,
+              title: posting.title,
+              url: posting.url,
+              deadline: posting.deadline,
+              status: posting.status,
+              description: posting.description,
+            }}
+          />
+          <ArchiveButton
+            jobPostingId={posting.id}
+            archived={posting.archivedAt !== null}
+          />
           <AddApplicationDialog
             companyId={companyId}
             companyName={companyName}

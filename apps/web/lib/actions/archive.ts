@@ -39,25 +39,34 @@ async function fetchPostingContent(
   return (fallback ?? "본문을 가져오지 못했습니다.").slice(0, MAX_ARCHIVE_CHARS);
 }
 
-export async function archiveJobPostingAction(formData: FormData): Promise<void> {
-  const id = z.uuid().parse(formData.get("jobPostingId"));
+export type ArchiveResult =
+  | { ok: true; content: string }
+  | { ok: false; error: string };
+
+/** 공고 상세를 가져와 보관하고, 저장된 본문을 반환한다 (다이얼로그 미리보기용) */
+export async function archiveJobPostingAction(
+  jobPostingId: string,
+): Promise<ArchiveResult> {
+  const parsed = z.uuid().safeParse(jobPostingId);
+  if (!parsed.success) return { ok: false, error: "잘못된 공고 ID입니다." };
 
   const db = getDb();
   const rows = await db
     .select({ url: jobPostings.url, description: jobPostings.description })
     .from(jobPostings)
-    .where(eq(jobPostings.id, id));
+    .where(eq(jobPostings.id, parsed.data));
   const posting = rows[0];
-  if (!posting) return;
+  if (!posting) return { ok: false, error: "공고를 찾을 수 없습니다." };
 
   const content = await fetchPostingContent(posting.url, posting.description);
   await db
     .update(jobPostings)
     .set({ archivedContent: content, archivedAt: new Date() })
-    .where(eq(jobPostings.id, id));
+    .where(eq(jobPostings.id, parsed.data));
 
   revalidatePath("/jobs");
   revalidatePath("/jobs/archive");
+  return { ok: true, content };
 }
 
 /** 보관 해제 */
