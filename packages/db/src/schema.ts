@@ -62,6 +62,10 @@ export const jobPostings = pgTable('job_postings', {
   /** company_id + title + url 기반 중복 수집 방지 해시 (shared의 contentHash) */
   contentHash: text('content_hash').notNull().unique(),
   status: jobPostingStatusEnum('status').notNull().default('open'),
+  /** 사용자가 보관한 공고 상세 내용 스냅샷 (스펙 5장) — null이면 미보관 */
+  archivedContent: text('archived_content'),
+  /** 보관 시각 — null이면 미보관 */
+  archivedAt: timestamp('archived_at', { withTimezone: true }),
   firstSeenAt: timestamp('first_seen_at', { withTimezone: true })
     .notNull()
     .defaultNow(),
