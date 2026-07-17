@@ -1,0 +1,60 @@
+{
+  "paging": {
+    "pageNumber": 1,
+    "pageSize": 20,
+    "totalPages": 6,
+    "totalElements": 105,
+    "filterType": null,
+    "recruitClassNames": null,
+    "recruitEmployeeTypes": null,
+    "recruitSectorNames": null,
+    "keyword": null,
+    "receiptFilterType": null
+  },
+  "list": [
+    {
+      "recruitNoticeSn": 258193,
+      "recruitNoticeName": "시장리스크 시스템 개발자 (계약직)",
+      "recruitNoticeUrl": "kakaobank.recruiter.co.kr/app/jobnotice/view?systemKindCode=MRS2&jobnoticeSn=258193",
+      "recruitNoticeResumeType": "RESUME_TEMPLATE",
+      "recruitTypeName": "일반채용",
+      "recruitClassName": "Core Banking",
+      "receiveStartDatetime": "2026-06-26 00:00:00",
+      "receiveEndDatetime": "2026-07-17 23:59:59",
+      "sortOrder": 0
+    },
+    {
+      "recruitNoticeSn": 259483,
+      "recruitNoticeName": "RPA 개발 및 운영 담당자 (계약직)",
+      "recruitNoticeUrl": "kakaobank.recruiter.co.kr/app/jobnotice/view?systemKindCode=MRS2&jobnoticeSn=259483",
+      "recruitNoticeResumeType": "RESUME_TEMPLATE",
+      "recruitTypeName": "상시",
+      "recruitClassName": "AI",
+      "receiveStartDatetime": "2026-07-07 00:00:00",
+      "receiveEndDatetime": "2026-07-29 23:59:59",
+      "sortOrder": 0
+    },
+    {
+      "recruitNoticeSn": 260218,
+      "recruitNoticeName": "신사업(서베이) 운영 및 기획 어시스턴트 (체험형 인턴)",
+      "recruitNoticeUrl": "kakaobank.recruiter.co.kr/app/jobnotice/view?systemKindCode=MRS2&jobnoticeSn=260218",
+      "recruitNoticeResumeType": "RESUME_TEMPLATE",
+      "recruitTypeName": "일반채용",
+      "recruitClassName": "Service & Biz",
+      "receiveStartDatetime": "2026-07-14 00:00:00",
+      "receiveEndDatetime": "2026-07-24 23:59:59",
+      "sortOrder": 0
+    },
+    {
+      "recruitNoticeSn": 260482,
+      "recruitNoticeName": "CS 데이터 분석 담당자 (계약직)",
+      "recruitNoticeUrl": "kakaobank.recruiter.co.kr/app/jobnotice/view?systemKindCode=MRS2&jobnoticeSn=260482",
+      "recruitNoticeResumeType": "RESUME_TEMPLATE",
+      "recruitTypeName": "일반채용",
+      "recruitClassName": "Customer Service",
+      "receiveStartDatetime": "2026-07-16 00:00:00",
+      "receiveEndDatetime": "2026-08-06 23:59:59",
+      "sortOrder": 0
+    }
+  ]
+}

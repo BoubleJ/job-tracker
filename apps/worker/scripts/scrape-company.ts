@@ -1,7 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { and, eq, notInArray } from 'drizzle-orm';
 import { companies, createDb, jobPostings, type Company } from '@job-tracker/db';
-import { categorySchema, normalizeCompanyName } from '@job-tracker/shared';
+import {
+  categorySchema,
+  normalizeCompanyName,
+  parseScrapeConfig,
+  scrapeStrategySchema,
+} from '@job-tracker/shared';
 import { contentHash } from '@job-tracker/shared/content-hash';
 import { z } from 'zod';
 
@@ -12,7 +17,11 @@ import { z } from 'zod';
  * 입력 JSON:
  * {
  *   "company": "회사명",
- *   "careersUrl": "https://.../careers",
+ *   "careersUrl": "https://.../careers",  // ''로 두면 scrape-jobs 크론이 이 회사를 건너뛴다 (전용 어댑터가 없는 회사).
+ *   "strategy": "ninehire",            // 생략 시 'llm'. 전용 어댑터가 있으면 반드시 지정할 것 —
+ *                                      // 'llm'으로 등록하면 크론이 CSR 목록 페이지에서 0건을 얻고,
+ *                                      // 미발견 open 공고를 무조건 closed 처리해 여기서 넣은 공고가 전부 닫힌다.
+ *   "scrapeConfig": { "url": "..." },  // 생략 시 { url: careersUrl }
  *   "closeAbsent": false,              // true면 이번 목록에 없는 해당 회사 open 공고를 closed 처리
  *   "postings": [
  *     { "title": "...", "url": "https://...", "description": "...", "deadline": "2026-08-01", "category": "frontend" }
@@ -23,12 +32,19 @@ import { z } from 'zod';
  */
 const inputSchema = z.object({
   company: z.string().trim().min(1),
-  careersUrl: z.string().url(),
+  careersUrl: z.union([z.literal(''), z.string().url()]),
+  strategy: scrapeStrategySchema.default('llm'),
+  scrapeConfig: z.record(z.string(), z.unknown()).optional(),
   closeAbsent: z.boolean().default(false),
   postings: z
     .array(
       z.object({
-        title: z.string().trim().min(1),
+        /**
+         * trim하지 않는다 — contentHash(companyId, title, url)가 어댑터 출력과 글자 단위로 같아야 한다.
+         * 어댑터는 제목을 원문 그대로 넘기므로(공백 포함), 여기서 trim하면 해시가 어긋나
+         * 다음 scrape-jobs 크론이 이 공고를 "미발견"으로 보고 closed 처리한다.
+         */
+        title: z.string().min(1),
         url: z.string().url(),
         description: z.string().nullish(),
         deadline: z.iso.date().nullish(),
@@ -43,9 +59,14 @@ async function main(): Promise<void> {
   if (!path) throw new Error('usage: tsx scripts/scrape-company.ts <input.json>');
   const input = inputSchema.parse(JSON.parse(readFileSync(path, 'utf8')));
 
+  const scrapeConfig = input.scrapeConfig ?? { url: input.careersUrl };
+  // careersUrl이 ''인 회사는 크론이 건너뛰므로 config가 파싱되지 않는다 — 검증도 건너뛴다.
+  // 크론이 실제로 스크랩할 회사만, 잘못된 전략/설정이 다음 크론에서 터지지 않도록 여기서 미리 검증한다.
+  if (input.careersUrl !== '') parseScrapeConfig(input.strategy, scrapeConfig);
+
   const { db, client } = createDb();
   try {
-    // 회사 findOrCreate (정규화 이름 기준) + careersUrl 갱신
+    // 회사 findOrCreate (정규화 이름 기준) + careersUrl·전략 갱신
     const key = normalizeCompanyName(input.company);
     const existing = (await db.select().from(companies)).find(
       (c) => normalizeCompanyName(c.name) === key,
@@ -53,12 +74,20 @@ async function main(): Promise<void> {
     let company: Company;
     if (existing) {
       company = existing;
-      if (existing.careersUrl !== input.careersUrl) {
+      if (
+        existing.careersUrl !== input.careersUrl ||
+        existing.scrapeStrategy !== input.strategy ||
+        JSON.stringify(existing.scrapeConfig) !== JSON.stringify(scrapeConfig)
+      ) {
         await db
           .update(companies)
-          .set({ careersUrl: input.careersUrl, scrapeConfig: { url: input.careersUrl } })
+          .set({
+            careersUrl: input.careersUrl,
+            scrapeStrategy: input.strategy,
+            scrapeConfig,
+          })
           .where(eq(companies.id, existing.id));
-        console.log(`  careersUrl 갱신: ${input.company}`);
+        console.log(`  회사 설정 갱신: ${input.company} (${input.strategy})`);
       }
     } else {
       const [created] = await db
@@ -66,8 +95,8 @@ async function main(): Promise<void> {
         .values({
           name: input.company,
           careersUrl: input.careersUrl,
-          scrapeStrategy: 'llm',
-          scrapeConfig: { url: input.careersUrl },
+          scrapeStrategy: input.strategy,
+          scrapeConfig,
         })
         .returning();
       if (!created) throw new Error(`failed to create company: ${input.company}`);

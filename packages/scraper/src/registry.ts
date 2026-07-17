@@ -10,6 +10,9 @@ import { scrapeLever } from './adapters/lever';
 import { scrapeGreenhouse } from './adapters/greenhouse';
 import { scrapeJobflex } from './adapters/jobflex';
 import { scrapeBanksalad } from './adapters/banksalad';
+import { scrapeNaver } from './adapters/naver';
+import { scrapeKakao } from './adapters/kakao';
+import { scrapeKakaobank } from './adapters/kakaobank';
 import { scrapeLlm } from './adapters/llm';
 
 /**
@@ -24,6 +27,9 @@ export const adapters = {
   greenhouse: scrapeGreenhouse,
   jobflex: scrapeJobflex,
   banksalad: scrapeBanksalad,
+  naver: scrapeNaver,
+  kakao: scrapeKakao,
+  kakaobank: scrapeKakaobank,
   llm: scrapeLlm,
 } as const satisfies {
   [S in ScrapeStrategy]: ScrapeAdapter<Extract<ScrapeConfig, { strategy: S }>>;
@@ -47,6 +53,12 @@ export function runAdapter(config: ScrapeConfig): Promise<ScrapeResult[]> {
       return adapters.jobflex(config);
     case 'banksalad':
       return adapters.banksalad(config);
+    case 'naver':
+      return adapters.naver(config);
+    case 'kakao':
+      return adapters.kakao(config);
+    case 'kakaobank':
+      return adapters.kakaobank(config);
     case 'llm':
       return adapters.llm(config);
     default:

@@ -31,3 +31,25 @@ export async function fetchJson(
   }
   return res.json();
 }
+
+/** JSON 본문을 POST하는 목록 API용 (카카오뱅크). */
+export async function postJson(
+  url: string,
+  body: unknown,
+  fetchImpl: typeof fetch = fetch,
+): Promise<unknown> {
+  const res = await fetchImpl(url, {
+    method: 'POST',
+    headers: {
+      ...DEFAULT_HEADERS,
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify(body),
+    redirect: 'follow',
+  });
+  if (!res.ok) {
+    throw new Error(`Fetch failed: ${res.status} ${url}`);
+  }
+  return res.json();
+}

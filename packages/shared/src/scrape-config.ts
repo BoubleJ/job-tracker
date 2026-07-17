@@ -54,6 +54,29 @@ export const banksaladConfigSchema = z.object({
 });
 export type BanksaladConfig = z.infer<typeof banksaladConfigSchema>;
 
+export const naverConfigSchema = z.object({
+  /**
+   * 네이버 계열 채용 목록 URL — 쿼리스트링의 직군 필터(subJobCdArr 등)가 그대로 API에 전달되므로
+   * 필터가 걸린 URL을 통째로 넣는다. 호스트로 계열사가 갈린다 (navercorp / snowcorp).
+   */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type NaverConfig = z.infer<typeof naverConfigSchema>;
+
+export const kakaoConfigSchema = z.object({
+  /** careers.kakao.com 채용 목록 URL — 쿼리(part/company 등)가 그대로 API 파라미터로 쓰인다 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type KakaoConfig = z.infer<typeof kakaoConfigSchema>;
+
+export const kakaobankConfigSchema = z.object({
+  /** 공고 목록 API가 어댑터에 고정되어 있어 별도 설정이 없다 (careers_url은 사람이 보는 용도) */
+  policyUrl: policyUrlField,
+});
+export type KakaobankConfig = z.infer<typeof kakaobankConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -71,6 +94,9 @@ export type ScrapeConfigData =
   | NinehireConfig
   | JobflexConfig
   | BanksaladConfig
+  | NaverConfig
+  | KakaoConfig
+  | KakaobankConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -80,6 +106,9 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   ninehireConfigSchema.extend({ strategy: z.literal('ninehire') }),
   jobflexConfigSchema.extend({ strategy: z.literal('jobflex') }),
   banksaladConfigSchema.extend({ strategy: z.literal('banksalad') }),
+  naverConfigSchema.extend({ strategy: z.literal('naver') }),
+  kakaoConfigSchema.extend({ strategy: z.literal('kakao') }),
+  kakaobankConfigSchema.extend({ strategy: z.literal('kakaobank') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

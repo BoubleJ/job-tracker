@@ -9,8 +9,11 @@ import {
   greenhouseConfigSchema,
   greetingConfigSchema,
   jobflexConfigSchema,
+  kakaoConfigSchema,
+  kakaobankConfigSchema,
   leverConfigSchema,
   llmConfigSchema,
+  naverConfigSchema,
   ninehireConfigSchema,
   scrapeStrategySchema,
   type ScrapeConfigData,
@@ -73,6 +76,20 @@ function buildScrapeConfig(
     case "banksalad":
       // 공고 API가 어댑터에 고정되어 있어 전략별 폼 필드가 없다
       return banksaladConfigSchema.parse({ policyUrl });
+    case "naver":
+      // 목록 URL의 쿼리(직군 필터)가 그대로 API에 전달되므로 필터가 걸린 URL을 통째로 넣는다
+      return naverConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "kakao":
+      return kakaoConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "kakaobank":
+      // 공고 API가 어댑터에 고정되어 있어 전략별 폼 필드가 없다
+      return kakaobankConfigSchema.parse({ policyUrl });
     case "llm":
       return llmConfigSchema.parse({
         url: optionalField(formData, "configUrl"),

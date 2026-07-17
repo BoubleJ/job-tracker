@@ -9,6 +9,22 @@ export {
   extractNinehireCompanyId,
 } from './adapters/ninehire';
 export { scrapeBanksalad, parseBanksaladResponse } from './adapters/banksalad';
+export {
+  scrapeNaver,
+  parseNaverResponse,
+  extractNaverDescription,
+} from './adapters/naver';
+export {
+  scrapeKakao,
+  parseKakaoListResponse,
+  parseKakaoDetailResponse,
+} from './adapters/kakao';
+export {
+  scrapeKakaobank,
+  parseKakaobankListResponse,
+  parseKakaobankDetailResponse,
+} from './adapters/kakaobank';
+export { htmlToText, MAX_DESCRIPTION_LENGTH } from './html';
 export { scrapeLlm, jobExtractionSchema, isProbablyCsr } from './adapters/llm';
 export {
   extractApplyPolicy,

@@ -37,6 +37,9 @@ const STRATEGY_LABELS: Record<ScrapeStrategy, string> = {
   greenhouse: "Greenhouse",
   jobflex: "JOBFLEX (recruiter.co.kr)",
   banksalad: "뱅크샐러드 (corp.banksalad.com)",
+  naver: "네이버 계열 (recruit.navercorp.com / snowcorp.com)",
+  kakao: "카카오 (careers.kakao.com)",
+  kakaobank: "카카오뱅크 (recruit.kakaobank.com)",
   llm: "자체 채용페이지 (LLM 추출)",
 };
 
@@ -133,10 +136,16 @@ export function CompanyRegisterDialog() {
 
           {strategy === "greeting" ||
           strategy === "ninehire" ||
+          strategy === "naver" ||
+          strategy === "kakao" ||
           strategy === "llm" ? (
             <div className="space-y-2">
               <Label htmlFor="config-url">
-                {strategy === "llm" ? "채용페이지 URL" : "채용페이지 URL (커스텀 도메인 포함)"}
+                {strategy === "llm"
+                  ? "채용페이지 URL"
+                  : strategy === "naver" || strategy === "kakao"
+                    ? "채용 목록 URL (직군 필터 쿼리 포함)"
+                    : "채용페이지 URL (커스텀 도메인 포함)"}
               </Label>
               <Input
                 id="config-url"

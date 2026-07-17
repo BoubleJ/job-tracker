@@ -32,6 +32,23 @@ describe('parseScrapeConfig', () => {
     expect(() => parseScrapeConfig('lever', null)).toThrow();
   });
 
+  it('naver/kakao는 직군 필터 쿼리가 붙은 목록 URL을 그대로 받는다', () => {
+    const naverUrl = 'https://recruit.navercorp.com/rcrt/list.do?subJobCdArr=1010001%2C1010002';
+    expect(parseScrapeConfig('naver', { url: naverUrl })).toEqual({
+      strategy: 'naver',
+      url: naverUrl,
+    });
+    expect(parseScrapeConfig('kakao', { url: 'https://careers.kakao.com/jobs?part=TECHNOLOGY' })).toEqual({
+      strategy: 'kakao',
+      url: 'https://careers.kakao.com/jobs?part=TECHNOLOGY',
+    });
+    expect(() => parseScrapeConfig('naver', {})).toThrow();
+  });
+
+  it('kakaobank는 API가 어댑터에 고정이라 설정이 없다', () => {
+    expect(parseScrapeConfig('kakaobank', {})).toEqual({ strategy: 'kakaobank' });
+  });
+
   it('llm 전략의 needsBrowser는 생략 가능하다', () => {
     expect(parseScrapeConfig('llm', { url: 'https://x.com' })).toEqual({
       strategy: 'llm',

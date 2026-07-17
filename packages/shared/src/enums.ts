@@ -43,6 +43,12 @@ export const SCRAPE_STRATEGIES = [
   'jobflex',
   /** 뱅크샐러드 자체 채용페이지 (greeting 백엔드지만 채용페이지가 꺼져 있어 전용 API가 필요) */
   'banksalad',
+  /** 네이버 계열 자체 채용페이지 (recruit.navercorp.com / recruit.snowcorp.com — 같은 rcrt 플랫폼) */
+  'naver',
+  /** 카카오 자체 채용페이지 (careers.kakao.com) */
+  'kakao',
+  /** 카카오뱅크 자체 채용페이지 (recruit.kakaobank.com) */
+  'kakaobank',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];
