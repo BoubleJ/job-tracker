@@ -77,6 +77,13 @@ export const kakaobankConfigSchema = z.object({
 });
 export type KakaobankConfig = z.infer<typeof kakaobankConfigSchema>;
 
+export const soopConfigSchema = z.object({
+  /** SOOP 채용 목록 URL (recruit_list.php) — 목록 HTML에 전 공고가 들어 있다 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type SoopConfig = z.infer<typeof soopConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -97,6 +104,7 @@ export type ScrapeConfigData =
   | NaverConfig
   | KakaoConfig
   | KakaobankConfig
+  | SoopConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -109,6 +117,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   naverConfigSchema.extend({ strategy: z.literal('naver') }),
   kakaoConfigSchema.extend({ strategy: z.literal('kakao') }),
   kakaobankConfigSchema.extend({ strategy: z.literal('kakaobank') }),
+  soopConfigSchema.extend({ strategy: z.literal('soop') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

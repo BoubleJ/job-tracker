@@ -49,6 +49,8 @@ export const SCRAPE_STRATEGIES = [
   'kakao',
   /** 카카오뱅크 자체 채용페이지 (recruit.kakaobank.com) */
   'kakaobank',
+  /** SOOP(구 아프리카TV) 자체 채용페이지 (recruit.sooplive.com) */
+  'soop',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

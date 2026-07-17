@@ -40,6 +40,7 @@ const STRATEGY_LABELS: Record<ScrapeStrategy, string> = {
   naver: "네이버 계열 (recruit.navercorp.com / snowcorp.com)",
   kakao: "카카오 (careers.kakao.com)",
   kakaobank: "카카오뱅크 (recruit.kakaobank.com)",
+  soop: "SOOP (recruit.sooplive.com)",
   llm: "자체 채용페이지 (LLM 추출)",
 };
 
@@ -138,6 +139,7 @@ export function CompanyRegisterDialog() {
           strategy === "ninehire" ||
           strategy === "naver" ||
           strategy === "kakao" ||
+          strategy === "soop" ||
           strategy === "llm" ? (
             <div className="space-y-2">
               <Label htmlFor="config-url">

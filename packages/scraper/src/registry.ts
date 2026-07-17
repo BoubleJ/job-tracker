@@ -13,6 +13,7 @@ import { scrapeBanksalad } from './adapters/banksalad';
 import { scrapeNaver } from './adapters/naver';
 import { scrapeKakao } from './adapters/kakao';
 import { scrapeKakaobank } from './adapters/kakaobank';
+import { scrapeSoop } from './adapters/soop';
 import { scrapeLlm } from './adapters/llm';
 
 /**
@@ -30,6 +31,7 @@ export const adapters = {
   naver: scrapeNaver,
   kakao: scrapeKakao,
   kakaobank: scrapeKakaobank,
+  soop: scrapeSoop,
   llm: scrapeLlm,
 } as const satisfies {
   [S in ScrapeStrategy]: ScrapeAdapter<Extract<ScrapeConfig, { strategy: S }>>;
@@ -59,6 +61,8 @@ export function runAdapter(config: ScrapeConfig): Promise<ScrapeResult[]> {
       return adapters.kakao(config);
     case 'kakaobank':
       return adapters.kakaobank(config);
+    case 'soop':
+      return adapters.soop(config);
     case 'llm':
       return adapters.llm(config);
     default:

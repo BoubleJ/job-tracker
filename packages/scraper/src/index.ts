@@ -24,6 +24,12 @@ export {
   parseKakaobankListResponse,
   parseKakaobankDetailResponse,
 } from './adapters/kakaobank';
+export {
+  scrapeSoop,
+  parseSoopList,
+  parseSoopDeadline,
+  extractSoopDescription,
+} from './adapters/soop';
 export { htmlToText, MAX_DESCRIPTION_LENGTH } from './html';
 export { scrapeLlm, jobExtractionSchema, isProbablyCsr } from './adapters/llm';
 export {

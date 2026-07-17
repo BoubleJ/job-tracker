@@ -6,7 +6,7 @@ import { ArchiveButton } from "@/components/jobs/archive-button";
 import { CategoryBadgeEditor } from "@/components/jobs/category-badge-editor";
 import { JobPostingEditDialog } from "@/components/jobs/job-posting-edit-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardFooter, CardHeader } from "@/components/ui/card";
 import type { AppliedInfo } from "@/lib/applied";
 import { formatReapplyStatus } from "@/lib/applied";
 import { formatDate } from "@/lib/format";
@@ -96,13 +96,11 @@ export function JobCard({
           )}
         </div>
       </CardHeader>
-      {posting.description ? (
-        <CardContent>
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {posting.description}
-          </p>
-        </CardContent>
-      ) : null}
+      {/*
+        공고 설명은 목록에 노출하지 않는다 — 앞 두 줄만 잘려 보여서 읽히지 않는다.
+        수집은 계속한다: 직군 분류기가 제목만으로 애매한 공고를 가를 때 쓰고(classify-category),
+        편집 다이얼로그에서 확인·수정할 수 있다.
+      */}
       <CardFooter className="mt-auto justify-between gap-2">
         <span className="text-xs text-muted-foreground">
           {posting.deadline

@@ -15,6 +15,7 @@ import {
   llmConfigSchema,
   naverConfigSchema,
   ninehireConfigSchema,
+  soopConfigSchema,
   scrapeStrategySchema,
   type ScrapeConfigData,
   type ScrapeStrategy,
@@ -90,6 +91,11 @@ function buildScrapeConfig(
     case "kakaobank":
       // 공고 API가 어댑터에 고정되어 있어 전략별 폼 필드가 없다
       return kakaobankConfigSchema.parse({ policyUrl });
+    case "soop":
+      return soopConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
     case "llm":
       return llmConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
