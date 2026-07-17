@@ -15,6 +15,7 @@ import {
   llmConfigSchema,
   naverConfigSchema,
   ninehireConfigSchema,
+  soomgoConfigSchema,
   soopConfigSchema,
   scrapeStrategySchema,
   type ScrapeConfigData,
@@ -93,6 +94,11 @@ function buildScrapeConfig(
       return kakaobankConfigSchema.parse({ policyUrl });
     case "soop":
       return soopConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "soomgo":
+      return soomgoConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });

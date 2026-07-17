@@ -51,6 +51,8 @@ export const SCRAPE_STRATEGIES = [
   'kakaobank',
   /** SOOP(구 아프리카TV) 자체 채용페이지 (recruit.sooplive.com) */
   'soop',
+  /** 숨고 자체 채용페이지 (greeting 백엔드지만 채용페이지가 꺼져 있고 공개 API도 부정확) */
+  'soomgo',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

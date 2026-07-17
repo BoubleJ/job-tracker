@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { loadFixture } from '../../test/fixture';
-import { parseGreetingPage } from './greeting';
+import { parseGreetingOpeningDetail, parseGreetingPage } from './greeting';
 
 const PAGE_URL = 'https://oliveyoung.career.greetinghr.com/ko/main';
 
@@ -34,5 +34,25 @@ describe('parseGreetingPage', () => {
       }) +
       '</script>';
     expect(() => parseGreetingPage(html, PAGE_URL)).toThrow(/openings/);
+  });
+});
+
+// fixture: soomgo.career.greetinghr.com/ko/o/204087 실측 상세 (2026-07, 본문 앞부분만)
+describe('parseGreetingOpeningDetail', () => {
+  it('공고 상세에서 제목·상태·본문을 뽑는다', () => {
+    const detail = parseGreetingOpeningDetail(loadFixture('greeting-opening.html'));
+
+    expect(detail.title).toBe('Data Scientist');
+    expect(detail.status).toBe('OPEN');
+    // 실측: 상시채용이라 dueDate가 null이다
+    expect(detail.deadline).toBeUndefined();
+    expect(detail.description).toBeTruthy();
+    expect(detail.description).not.toMatch(/<[a-z]/i);
+  });
+
+  it('getOpeningById 쿼리가 없으면(구조 변경) throw한다', () => {
+    const html =
+      '<script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"dehydratedState":{"queries":[]}}}}</script>';
+    expect(() => parseGreetingOpeningDetail(html)).toThrow(/getOpeningById/);
   });
 });

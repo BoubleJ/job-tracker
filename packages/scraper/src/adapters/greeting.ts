@@ -3,6 +3,7 @@ import type { GreetingConfig } from '@job-tracker/shared';
 import type { ScrapeAdapter, ScrapeResult } from '../types';
 import { fetchJson, fetchText } from '../fetch';
 import { extractNextData, toIsoDate } from '../next-data';
+import { htmlToText } from '../html';
 
 /**
  * greeting(그리팅) 어댑터 — 스펙 7-3의 1순위 접근(__NEXT_DATA__)이 실측으로 확인됨.
@@ -105,6 +106,50 @@ export function extractGreetingWorkspaceId(html: string): number | null {
     }
   }
   return null;
+}
+
+const greetingOpeningDetailSchema = z.object({
+  openingsInfo: z.object({
+    title: z.string(),
+    /** 공고 본문 HTML */
+    detail: z.string().nullish(),
+    /** 마감일 — 상시채용이면 null */
+    dueDate: z.string().nullish(),
+    status: z.string().nullish(),
+  }),
+});
+
+export interface GreetingOpeningDetail {
+  title: string;
+  status: string | undefined;
+  deadline: string | undefined;
+  description: string | undefined;
+}
+
+/**
+ * 그리팅 공고 상세({origin}/ko/o/{id}) HTML에서 제목·마감일·본문을 뽑는다
+ * (fixture 테스트 대상 순수 함수).
+ *
+ * 채용페이지 목록이 꺼진 테넌트(soomgo 등)도 상세 페이지는 살아 있어 여기서 정보를 얻는다.
+ * 구조가 바뀌어 getOpeningById 쿼리를 못 찾으면 조용히 빈 값을 내지 않고 throw한다.
+ */
+export function parseGreetingOpeningDetail(html: string): GreetingOpeningDetail {
+  const nextData = greetingNextDataSchema.parse(extractNextData(html));
+  const query = nextData.props.pageProps.dehydratedState.queries.find(
+    (item) => Array.isArray(item.queryKey) && item.queryKey[1] === 'getOpeningById',
+  );
+  if (!query) {
+    throw new Error('greeting: getOpeningById query not found in __NEXT_DATA__');
+  }
+  const data = z
+    .object({ data: greetingOpeningDetailSchema })
+    .parse(query.state.data).data.openingsInfo;
+  return {
+    title: data.title,
+    status: data.status ?? undefined,
+    deadline: data.dueDate ? toIsoDate(data.dueDate) : undefined,
+    description: data.detail ? htmlToText(data.detail) || undefined : undefined,
+  };
 }
 
 const greetingApiResponseSchema = z.object({

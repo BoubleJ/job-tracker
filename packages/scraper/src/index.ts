@@ -2,7 +2,12 @@ export type { ScrapeResult, ScrapeAdapter } from './types';
 export { adapters, runAdapter } from './registry';
 export { scrapeLever, parseLeverResponse } from './adapters/lever';
 export { scrapeGreenhouse, parseGreenhouseResponse } from './adapters/greenhouse';
-export { scrapeGreeting, parseGreetingPage } from './adapters/greeting';
+export {
+  scrapeGreeting,
+  parseGreetingPage,
+  parseGreetingOpeningDetail,
+  type GreetingOpeningDetail,
+} from './adapters/greeting';
 export {
   scrapeNinehire,
   parseNinehireResponse,
@@ -30,6 +35,11 @@ export {
   parseSoopDeadline,
   extractSoopDescription,
 } from './adapters/soop';
+export {
+  scrapeSoomgo,
+  parseSoomgoCareerPage,
+  type SoomgoPosting,
+} from './adapters/soomgo';
 export { htmlToText, MAX_DESCRIPTION_LENGTH } from './html';
 export { scrapeLlm, jobExtractionSchema, isProbablyCsr } from './adapters/llm';
 export {
