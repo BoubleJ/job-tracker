@@ -15,6 +15,7 @@ import {
   llmConfigSchema,
   naverConfigSchema,
   ninehireConfigSchema,
+  socarConfigSchema,
   soomgoConfigSchema,
   soopConfigSchema,
   scrapeStrategySchema,
@@ -99,6 +100,11 @@ function buildScrapeConfig(
       });
     case "soomgo":
       return soomgoConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "socar":
+      return socarConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });

@@ -91,6 +91,13 @@ export const soomgoConfigSchema = z.object({
 });
 export type SoomgoConfig = z.infer<typeof soomgoConfigSchema>;
 
+export const socarConfigSchema = z.object({
+  /** 쏘카 자체 채용페이지 URL (www.socarcorp.kr/careers/jobs) — 공고 목록의 유일한 출처 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type SocarConfig = z.infer<typeof socarConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -113,6 +120,7 @@ export type ScrapeConfigData =
   | KakaobankConfig
   | SoopConfig
   | SoomgoConfig
+  | SocarConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -127,6 +135,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   kakaobankConfigSchema.extend({ strategy: z.literal('kakaobank') }),
   soopConfigSchema.extend({ strategy: z.literal('soop') }),
   soomgoConfigSchema.extend({ strategy: z.literal('soomgo') }),
+  socarConfigSchema.extend({ strategy: z.literal('socar') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

@@ -40,6 +40,11 @@ export {
   parseSoomgoCareerPage,
   type SoomgoPosting,
 } from './adapters/soomgo';
+export {
+  scrapeSocar,
+  parseSocarCareerPage,
+  type SocarPosting,
+} from './adapters/socar';
 export { htmlToText, MAX_DESCRIPTION_LENGTH } from './html';
 export { scrapeLlm, jobExtractionSchema, isProbablyCsr } from './adapters/llm';
 export {

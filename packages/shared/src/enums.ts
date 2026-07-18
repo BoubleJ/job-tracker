@@ -53,6 +53,8 @@ export const SCRAPE_STRATEGIES = [
   'soop',
   /** 숨고 자체 채용페이지 (greeting 백엔드지만 채용페이지가 꺼져 있고 공개 API도 부정확) */
   'soomgo',
+  /** 쏘카(+ 자회사 나인투원) 자체 채용페이지 (greeting 백엔드지만 목록이 꺼져 있어 숨고와 같은 방식) */
+  'socar',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];
