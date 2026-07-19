@@ -19,6 +19,7 @@ import { scrapeSocar } from './adapters/socar';
 import { scrapeFlexteam } from './adapters/flexteam';
 import { scrapeAbly } from './adapters/ably';
 import { scrapeDunamu } from './adapters/dunamu';
+import { scrapeDealicious } from './adapters/dealicious';
 import { scrapeLlm } from './adapters/llm';
 
 /**
@@ -42,6 +43,7 @@ export const adapters = {
   flexteam: scrapeFlexteam,
   ably: scrapeAbly,
   dunamu: scrapeDunamu,
+  dealicious: scrapeDealicious,
   llm: scrapeLlm,
 } as const satisfies {
   [S in ScrapeStrategy]: ScrapeAdapter<Extract<ScrapeConfig, { strategy: S }>>;
@@ -83,6 +85,8 @@ export function runAdapter(config: ScrapeConfig): Promise<ScrapeResult[]> {
       return adapters.ably(config);
     case 'dunamu':
       return adapters.dunamu(config);
+    case 'dealicious':
+      return adapters.dealicious(config);
     case 'llm':
       return adapters.llm(config);
     default:

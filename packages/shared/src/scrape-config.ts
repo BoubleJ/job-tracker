@@ -119,6 +119,13 @@ export const dunamuConfigSchema = z.object({
 });
 export type DunamuConfig = z.infer<typeof dunamuConfigSchema>;
 
+export const dealiciousConfigSchema = z.object({
+  /** 딜리셔스 자체 채용페이지 URL (www.dealicious.kr/career) — 호스트가 /api/openings의 origin이 된다 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type DealiciousConfig = z.infer<typeof dealiciousConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -145,6 +152,7 @@ export type ScrapeConfigData =
   | FlexteamConfig
   | AblyConfig
   | DunamuConfig
+  | DealiciousConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -163,6 +171,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   flexteamConfigSchema.extend({ strategy: z.literal('flexteam') }),
   ablyConfigSchema.extend({ strategy: z.literal('ably') }),
   dunamuConfigSchema.extend({ strategy: z.literal('dunamu') }),
+  dealiciousConfigSchema.extend({ strategy: z.literal('dealicious') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

@@ -61,6 +61,8 @@ export const SCRAPE_STRATEGIES = [
   'ably',
   /** 두나무 자체 채용페이지 (www.dunamu.com/careers/jobs — 공고가 article로 __NEXT_DATA__에 임베드) */
   'dunamu',
+  /** 딜리셔스 자체 채용페이지 (www.dealicious.kr/career — greeting 백엔드지만 목록이 꺼져 있어 자체 /api/openings) */
+  'dealicious',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];
