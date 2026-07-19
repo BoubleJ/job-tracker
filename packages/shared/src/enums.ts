@@ -57,6 +57,10 @@ export const SCRAPE_STRATEGIES = [
   'socar',
   /** 플렉스팀 자체 채용페이지 (flex.careers.team — flex 자체 recruiting 제품, 공개 API로 목록·제목이 안정적) */
   'flexteam',
+  /** 에이블리 자체 채용페이지 (ably.team/recruit — ninehire 백엔드지만 테넌트 홈페이지가 꺼져 있어 자체 페이지 __NEXT_DATA__로) */
+  'ably',
+  /** 두나무 자체 채용페이지 (www.dunamu.com/careers/jobs — 공고가 article로 __NEXT_DATA__에 임베드) */
+  'dunamu',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

@@ -105,6 +105,20 @@ export const flexteamConfigSchema = z.object({
 });
 export type FlexteamConfig = z.infer<typeof flexteamConfigSchema>;
 
+export const ablyConfigSchema = z.object({
+  /** 에이블리 자체 채용페이지 URL (ably.team/recruit) — __NEXT_DATA__ recruits의 유일한 출처 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type AblyConfig = z.infer<typeof ablyConfigSchema>;
+
+export const dunamuConfigSchema = z.object({
+  /** 두나무 채용 목록 URL (www.dunamu.com/careers/jobs) — __NEXT_DATA__ articles의 출처 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type DunamuConfig = z.infer<typeof dunamuConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -129,6 +143,8 @@ export type ScrapeConfigData =
   | SoomgoConfig
   | SocarConfig
   | FlexteamConfig
+  | AblyConfig
+  | DunamuConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -145,6 +161,8 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   soomgoConfigSchema.extend({ strategy: z.literal('soomgo') }),
   socarConfigSchema.extend({ strategy: z.literal('socar') }),
   flexteamConfigSchema.extend({ strategy: z.literal('flexteam') }),
+  ablyConfigSchema.extend({ strategy: z.literal('ably') }),
+  dunamuConfigSchema.extend({ strategy: z.literal('dunamu') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;
