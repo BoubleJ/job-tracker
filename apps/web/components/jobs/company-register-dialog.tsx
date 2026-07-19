@@ -43,6 +43,7 @@ const STRATEGY_LABELS: Record<ScrapeStrategy, string> = {
   soop: "SOOP (recruit.sooplive.com)",
   soomgo: "숨고 (soomgo.team)",
   socar: "쏘카 (socarcorp.kr)",
+  flexteam: "플렉스팀 (flex.careers.team)",
   llm: "자체 채용페이지 (LLM 추출)",
 };
 
@@ -144,6 +145,7 @@ export function CompanyRegisterDialog() {
           strategy === "soop" ||
           strategy === "soomgo" ||
           strategy === "socar" ||
+          strategy === "flexteam" ||
           strategy === "llm" ? (
             <div className="space-y-2">
               <Label htmlFor="config-url">

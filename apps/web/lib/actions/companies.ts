@@ -7,6 +7,7 @@ import {
   assertNever,
   banksaladConfigSchema,
   greenhouseConfigSchema,
+  flexteamConfigSchema,
   greetingConfigSchema,
   jobflexConfigSchema,
   kakaoConfigSchema,
@@ -105,6 +106,11 @@ function buildScrapeConfig(
       });
     case "socar":
       return socarConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "flexteam":
+      return flexteamConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });

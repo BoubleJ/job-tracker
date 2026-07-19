@@ -55,6 +55,8 @@ export const SCRAPE_STRATEGIES = [
   'soomgo',
   /** 쏘카(+ 자회사 나인투원) 자체 채용페이지 (greeting 백엔드지만 목록이 꺼져 있어 숨고와 같은 방식) */
   'socar',
+  /** 플렉스팀 자체 채용페이지 (flex.careers.team — flex 자체 recruiting 제품, 공개 API로 목록·제목이 안정적) */
+  'flexteam',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

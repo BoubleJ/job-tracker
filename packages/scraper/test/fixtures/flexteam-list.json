@@ -1,0 +1,28 @@
+{
+  "jobDescriptions": [
+    {
+      "jobDescriptionIdHash": "7907edgEgJ",
+      "title": "Customer Consultant (Sales) Intern (6개월, 채용연계형)",
+      "recruitingEmploymentContractType": "INTERN",
+      "isOccasionalRecruitment": false,
+      "recruitingStartDate": "2026-07-14",
+      "recruitingEndDate": "2026-07-26"
+    },
+    {
+      "jobDescriptionIdHash": "gbr04KM8KJ",
+      "customerJobGroupIdHash": "XMV0aJzZBn",
+      "title": "[Product] Product Designer (Web)",
+      "jobRoleName": "Product Designer",
+      "recruitingEmploymentContractType": "REGULAR",
+      "isOccasionalRecruitment": true,
+      "recruitingStartDate": "2024-01-20",
+      "recruitingEndDate": "2025-01-20"
+    },
+    {
+      "jobDescriptionIdHash": "5xEwvjyzbl",
+      "title": "[Product] Forward Deployment Engineer (FDE)",
+      "recruitingEmploymentContractType": "REGULAR",
+      "isOccasionalRecruitment": true
+    }
+  ]
+}

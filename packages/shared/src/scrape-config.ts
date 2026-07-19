@@ -98,6 +98,13 @@ export const socarConfigSchema = z.object({
 });
 export type SocarConfig = z.infer<typeof socarConfigSchema>;
 
+export const flexteamConfigSchema = z.object({
+  /** 플렉스팀 채용페이지 URL (flex.careers.team/job-descriptions) — 공고 링크의 origin·customerIdHash 출처 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type FlexteamConfig = z.infer<typeof flexteamConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -121,6 +128,7 @@ export type ScrapeConfigData =
   | SoopConfig
   | SoomgoConfig
   | SocarConfig
+  | FlexteamConfig
   | LlmConfig;
 
 export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
@@ -136,6 +144,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   soopConfigSchema.extend({ strategy: z.literal('soop') }),
   soomgoConfigSchema.extend({ strategy: z.literal('soomgo') }),
   socarConfigSchema.extend({ strategy: z.literal('socar') }),
+  flexteamConfigSchema.extend({ strategy: z.literal('flexteam') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;
