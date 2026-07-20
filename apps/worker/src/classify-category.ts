@@ -44,7 +44,9 @@ const KEYWORD_RULES: ReadonlyArray<{
   },
   {
     category: 'frontend',
-    patterns: ['프론트', 'frontend', 'front end', /\bfe\b/],
+    // '프론트' 단독은 '프론트데스크/프론트오피스' 등 비개발에 오매칭 → '프론트엔드'로 좁힘.
+    // '프론트 개발자'처럼 애매한 표기는 무매칭으로 LLM 폴백에 맡긴다 (보수적 설계).
+    patterns: ['프론트엔드', '프론트 엔드', 'frontend', 'front end', /\bfe\b/],
   },
   {
     category: 'backend',
@@ -52,7 +54,24 @@ const KEYWORD_RULES: ReadonlyArray<{
   },
   {
     category: 'mobile',
-    patterns: ['모바일', /\bmobile\b/, 'android', '안드로이드', /\bios\b/, 'flutter', 'react native'],
+    // '모바일' 단독은 '모바일쿠폰 영업/모바일 마케팅' 등 비개발에 오매칭 → 개발 맥락 표기로 좁힘.
+    // android/ios/flutter/react native는 비개발 제목에 안 나오므로 그대로 둔다.
+    patterns: [
+      '모바일 개발',
+      '모바일 앱',
+      '모바일 클라이언트',
+      '모바일 엔지니어',
+      '앱 개발',
+      'mobile developer',
+      'mobile engineer',
+      'mobile app',
+      'mobile client',
+      'android',
+      '안드로이드',
+      /\bios\b/,
+      'flutter',
+      'react native',
+    ],
   },
   {
     category: 'devops',

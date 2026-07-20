@@ -40,6 +40,16 @@ describe('classifyByKeywords', () => {
     expect(classifyByKeywords('Android 개발자')).toBe('mobile');
     expect(classifyByKeywords('iOS Engineer')).toBe('mobile');
     expect(classifyByKeywords('React Native Developer')).toBe('mobile');
+    expect(classifyByKeywords('모바일 앱 개발자')).toBe('mobile');
+    expect(classifyByKeywords('Mobile Engineer')).toBe('mobile');
+  });
+
+  it("'모바일' 단독은 비개발 영업/마케팅에 오매칭하지 않는다 (LLM 폴백)", () => {
+    // 헥토 실사례: '모바일쿠폰 영업(B2B)'이 mobile로 오분류되던 것을 막는다
+    expect(classifyByKeywords('모바일쿠폰 영업(B2B)')).toBeNull();
+    expect(classifyByKeywords('모바일 상품권 마케팅')).toBeNull();
+    // '프론트' 단독도 마찬가지 — 프론트데스크/프론트오피스 오매칭 방지
+    expect(classifyByKeywords('프론트데스크 매니저')).toBeNull();
   });
 
   it('devops 키워드를 분류한다', () => {
