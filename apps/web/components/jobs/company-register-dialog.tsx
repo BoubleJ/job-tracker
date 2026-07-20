@@ -44,6 +44,9 @@ const STRATEGY_LABELS: Record<ScrapeStrategy, string> = {
   soomgo: "숨고 (soomgo.team)",
   socar: "쏘카 (socarcorp.kr)",
   flexteam: "플렉스팀 (flex.careers.team)",
+  ably: "에이블리 (ably.team/recruit)",
+  dunamu: "두나무 (dunamu.com/careers)",
+  dealicious: "딜리셔스 (dealicious.kr/career)",
   llm: "자체 채용페이지 (LLM 추출)",
 };
 

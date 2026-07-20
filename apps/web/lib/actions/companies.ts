@@ -4,8 +4,11 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { companies } from "@job-tracker/db";
 import {
+  ablyConfigSchema,
   assertNever,
   banksaladConfigSchema,
+  dealiciousConfigSchema,
+  dunamuConfigSchema,
   greenhouseConfigSchema,
   flexteamConfigSchema,
   greetingConfigSchema,
@@ -111,6 +114,21 @@ function buildScrapeConfig(
       });
     case "flexteam":
       return flexteamConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "ably":
+      return ablyConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "dunamu":
+      return dunamuConfigSchema.parse({
+        url: optionalField(formData, "configUrl"),
+        policyUrl,
+      });
+    case "dealicious":
+      return dealiciousConfigSchema.parse({
         url: optionalField(formData, "configUrl"),
         policyUrl,
       });
