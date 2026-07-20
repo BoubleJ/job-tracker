@@ -2,7 +2,6 @@ import { asc, desc } from "drizzle-orm";
 import { companies, jobPostings, type JobPosting } from "@job-tracker/db";
 
 import { CompanyGroup } from "@/components/jobs/company-group";
-import { CompanyRegisterDialog } from "@/components/jobs/company-register-dialog";
 import { JobCard } from "@/components/jobs/job-card";
 import { JobsFilter } from "@/components/jobs/jobs-filter";
 import {
@@ -96,14 +95,11 @@ export default async function JobsPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold">채용공고</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {filtered.length}건 표시 · 전체 {postingRows.length}건
-          </p>
-        </div>
-        <CompanyRegisterDialog />
+      <div>
+        <h1 className="text-2xl font-bold">채용공고</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {filtered.length}건 표시 · 전체 {postingRows.length}건
+        </p>
       </div>
 
       <JobsFilter
@@ -113,7 +109,7 @@ export default async function JobsPage({
 
       {companyRows.length === 0 ? (
         <p className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
-          등록된 회사가 없습니다. 오른쪽 위 “회사 등록”으로 시작하세요.
+          아직 등록된 회사가 없습니다.
         </p>
       ) : filterState.view === "grouped" ? (
         <div className="space-y-10">

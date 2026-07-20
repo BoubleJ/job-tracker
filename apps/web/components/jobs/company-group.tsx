@@ -3,9 +3,7 @@ import type { Application, Company, JobPosting } from "@job-tracker/db";
 import { JobCard } from "@/components/jobs/job-card";
 import { PolicyBadges } from "@/components/jobs/policy-badges";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import type { AppliedInfo } from "@/lib/applied";
-import { refreshCompanyPolicyAction } from "@/lib/actions/companies";
 
 export type CompanyWithApplications = Company & { applications: Application[] };
 
@@ -64,12 +62,6 @@ export function CompanyGroup({
         <span className="text-xs text-muted-foreground">
           공고 {postings.length}건
         </span>
-        <form action={refreshCompanyPolicyAction} className="ml-auto">
-          <input type="hidden" name="companyId" value={company.id} />
-          <Button type="submit" variant="ghost" size="sm">
-            정책 재확인
-          </Button>
-        </form>
       </div>
       {company.policyNote ? (
         <p className="text-xs text-muted-foreground">
