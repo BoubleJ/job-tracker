@@ -38,19 +38,24 @@ export function CompanyGroup({
       application.currentStage === "document_rejected",
   );
   const showReapplyHint = hasRejected && company.reapplyPolicy === "allowed";
+  // 표시용 채용페이지 링크. careersPageUrl은 등록 시 항상 채워지는 단일 소스
+  // (careersUrl은 스크랩 대상이라 어댑터 없는 회사는 ''로 비워 크론이 스킵한다).
+  const careersLink = company.careersPageUrl;
 
   return (
     <section className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
         <h2 className="text-lg font-semibold">{company.name}</h2>
-        <a
-          href={company.careersUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="text-xs text-muted-foreground hover:underline"
-        >
-          채용페이지 ↗
-        </a>
+        {careersLink ? (
+          <a
+            href={careersLink}
+            target="_blank"
+            rel="noreferrer"
+            className="text-xs text-muted-foreground hover:underline"
+          >
+            채용페이지 ↗
+          </a>
+        ) : null}
         <PolicyBadges
           reapplyPolicy={company.reapplyPolicy}
           duplicateApplyPolicy={company.duplicateApplyPolicy}

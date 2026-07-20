@@ -30,8 +30,17 @@ export const jobPostingStatusEnum = pgEnum('job_posting_status', JOB_POSTING_STA
 export const companies = pgTable('companies', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  /** 채용페이지 URL (사람이 보는 용도) */
+  /**
+   * 스크랩 대상 URL 겸 크론 트리거. ''이면 scrape-jobs 크론이 이 회사를 건너뛴다
+   * (전용 어댑터가 없는 회사). 사람이 보는 링크는 careersPageUrl을 우선 사용한다.
+   */
   careersUrl: text('careers_url').notNull(),
+  /**
+   * 사람이 보는 채용페이지 링크(표시 전용). 크론과 무관하므로 careersUrl=''로
+   * 크론에서 제외된 회사도 여기에 실제 채용페이지를 넣어 UI에 링크를 띄울 수 있다.
+   * 없으면 careersUrl로 폴백.
+   */
+  careersPageUrl: text('careers_page_url'),
   scrapeStrategy: scrapeStrategyEnum('scrape_strategy').notNull(),
   /** 전략별 설정 — 읽을 때 shared의 parseScrapeConfig(strategy, config)로 검증 */
   scrapeConfig: jsonb('scrape_config').$type<ScrapeConfigData>().notNull(),

@@ -162,6 +162,8 @@ export async function registerCompanyAction(
       .values({
         name: base.name,
         careersUrl: base.careersUrl,
+        // 표시용 링크 — 등록 시 받은 URL을 그대로 사용 (careersUrl은 이후 어댑터 사정에 따라 ''로 비울 수 있음)
+        careersPageUrl: base.careersUrl,
         scrapeStrategy: base.strategy,
         scrapeConfig,
       })
