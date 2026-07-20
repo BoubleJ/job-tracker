@@ -12,6 +12,18 @@ describe('extractNinehireCompanyId', () => {
     );
   });
 
+  it('roundhr 커스텀 도메인은 브랜드 이미지 URL에서 companyId를 뽑는다', () => {
+    // recruit.passorder.co.kr류 화이트라벨: __NEXT_DATA__에 companyId가 없고
+    // 브랜드 이미지 URL(image.ninehire.com/brand/{companyId})에만 있다.
+    const html =
+      '<script id="__NEXT_DATA__" type="application/json">' +
+      '{"props":{"pageProps":{"site_config":{}}}}</script>' +
+      '<img src="https://image.ninehire.com/brand/13b7d9e0-930c-11ed-828b-e106adb83d51/logo.png"/>';
+    expect(extractNinehireCompanyId(html)).toBe(
+      '13b7d9e0-930c-11ed-828b-e106adb83d51',
+    );
+  });
+
   it('__NEXT_DATA__가 없으면 throw한다', () => {
     expect(() => extractNinehireCompanyId('<html></html>')).toThrow(/__NEXT_DATA__/);
   });

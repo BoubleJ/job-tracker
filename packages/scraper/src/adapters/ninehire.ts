@@ -28,10 +28,23 @@ const ninehirePageDataSchema = z.object({
   }),
 });
 
-/** 페이지 HTML의 __NEXT_DATA__에서 companyId를 추출한다 (fixture 테스트 대상 순수 함수). */
+/**
+ * roundhr 화이트라벨 커스텀 도메인(예: recruit.passorder.co.kr)은 __NEXT_DATA__ 구조가
+ * 표준 나인하이어 페이지와 달라 companyId가 그 안에 없다. companyId(UUID)는 브랜드 이미지
+ * URL(image.ninehire.com/brand/{companyId}/...)에만 노출되므로 여기서 뽑는다.
+ */
+const NINEHIRE_BRAND_IMAGE_PATTERN =
+  /image\.ninehire\.com\/brand\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i;
+
+/** 페이지 HTML에서 companyId를 추출한다 (fixture 테스트 대상 순수 함수). */
 export function extractNinehireCompanyId(html: string): string {
-  return ninehirePageDataSchema.parse(extractNextData(html)).props.pageProps
-    .homepageProps.info.companyId;
+  const parsed = ninehirePageDataSchema.safeParse(extractNextData(html));
+  if (parsed.success) {
+    return parsed.data.props.pageProps.homepageProps.info.companyId;
+  }
+  const brandMatch = html.match(NINEHIRE_BRAND_IMAGE_PATTERN);
+  if (brandMatch?.[1]) return brandMatch[1];
+  throw new Error('ninehire companyId를 페이지에서 찾을 수 없다 (__NEXT_DATA__/브랜드 이미지 모두 실패)');
 }
 
 const ninehireRecruitmentSchema = z.object({
