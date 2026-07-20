@@ -34,10 +34,10 @@ const inputSchema = z.object({
   company: z.string().trim().min(1),
   careersUrl: z.union([z.literal(''), z.string().url()]),
   /**
-   * 사람이 보는 채용페이지 링크(표시 전용). 생략 시 careersUrl로 폴백하지만,
-   * careersUrl=''(크론 스킵)인 회사는 반드시 여기에 실제 채용페이지 URL을 넣어야 UI에 링크가 뜬다.
+   * 사람이 보는 채용페이지 링크(표시 전용) — 항상 실제 채용페이지 URL.
+   * careersUrl(스크랩 대상, ''로 크론 스킵 가능)과 독립적으로 다룬다.
    */
-  careersPageUrl: z.string().url().optional(),
+  careersPageUrl: z.string().url(),
   strategy: scrapeStrategySchema.default('llm'),
   scrapeConfig: z.record(z.string(), z.unknown()).optional(),
   closeAbsent: z.boolean().default(false),
@@ -65,9 +65,8 @@ async function main(): Promise<void> {
   const input = inputSchema.parse(JSON.parse(readFileSync(path, 'utf8')));
 
   const scrapeConfig = input.scrapeConfig ?? { url: input.careersUrl };
-  // 표시용 링크: 명시값 우선, 없으면 careersUrl(비어있지 않을 때)로 폴백
-  const careersPageUrl =
-    input.careersPageUrl ?? (input.careersUrl !== '' ? input.careersUrl : undefined);
+  // 표시용 링크(careersPageUrl)와 스크랩 대상(careersUrl)은 독립 — 서로 폴백하지 않는다.
+  const careersPageUrl = input.careersPageUrl;
   // careersUrl이 ''인 회사는 크론이 건너뛰므로 config가 파싱되지 않는다 — 검증도 건너뛴다.
   // 크론이 실제로 스크랩할 회사만, 잘못된 전략/설정이 다음 크론에서 터지지 않도록 여기서 미리 검증한다.
   if (input.careersUrl !== '') parseScrapeConfig(input.strategy, scrapeConfig);
@@ -82,18 +81,17 @@ async function main(): Promise<void> {
     let company: Company;
     if (existing) {
       company = existing;
-      const nextCareersPageUrl = careersPageUrl ?? existing.careersPageUrl;
       if (
         existing.careersUrl !== input.careersUrl ||
         existing.scrapeStrategy !== input.strategy ||
-        existing.careersPageUrl !== nextCareersPageUrl ||
+        existing.careersPageUrl !== careersPageUrl ||
         JSON.stringify(existing.scrapeConfig) !== JSON.stringify(scrapeConfig)
       ) {
         await db
           .update(companies)
           .set({
             careersUrl: input.careersUrl,
-            careersPageUrl: nextCareersPageUrl,
+            careersPageUrl,
             scrapeStrategy: input.strategy,
             scrapeConfig,
           })
@@ -106,7 +104,7 @@ async function main(): Promise<void> {
         .values({
           name: input.company,
           careersUrl: input.careersUrl,
-          careersPageUrl: careersPageUrl ?? null,
+          careersPageUrl,
           scrapeStrategy: input.strategy,
           scrapeConfig,
         })
