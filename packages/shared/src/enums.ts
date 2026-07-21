@@ -63,6 +63,8 @@ export const SCRAPE_STRATEGIES = [
   'dunamu',
   /** 딜리셔스 자체 채용페이지 (www.dealicious.kr/career — greeting 백엔드지만 목록이 꺼져 있어 자체 /api/openings) */
   'dealicious',
+  /** 오늘의집 자체 채용페이지 (www.bucketplace.com/careers — greeting 백엔드지만 목록이 꺼져 있어 Gatsby page-data.json) */
+  'bucketplace',
   'llm',
 ] as const;
 export type ScrapeStrategy = (typeof SCRAPE_STRATEGIES)[number];

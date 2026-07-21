@@ -126,6 +126,13 @@ export const dealiciousConfigSchema = z.object({
 });
 export type DealiciousConfig = z.infer<typeof dealiciousConfigSchema>;
 
+export const bucketplaceConfigSchema = z.object({
+  /** 오늘의집 자체 채용페이지 URL (www.bucketplace.com/careers) — 호스트가 page-data.json의 origin이 된다 */
+  url: z.url(),
+  policyUrl: policyUrlField,
+});
+export type BucketplaceConfig = z.infer<typeof bucketplaceConfigSchema>;
+
 export const llmConfigSchema = z.object({
   /** 자체 채용페이지 URL */
   url: z.url(),
@@ -172,6 +179,7 @@ export const scrapeConfigSchema = z.discriminatedUnion('strategy', [
   ablyConfigSchema.extend({ strategy: z.literal('ably') }),
   dunamuConfigSchema.extend({ strategy: z.literal('dunamu') }),
   dealiciousConfigSchema.extend({ strategy: z.literal('dealicious') }),
+  bucketplaceConfigSchema.extend({ strategy: z.literal('bucketplace') }),
   llmConfigSchema.extend({ strategy: z.literal('llm') }),
 ]);
 export type ScrapeConfig = z.infer<typeof scrapeConfigSchema>;

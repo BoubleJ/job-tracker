@@ -1,0 +1,49 @@
+{
+ "result": {
+  "data": {
+   "position": {
+    "nodes": [
+     {
+      "frontmatter": {
+       "name": "Senior Backend Engineer, Commerce",
+       "type": "greeting",
+       "teamName": "Engineering",
+       "isPool": false,
+       "order": 8100,
+       "recruitUrl": "https://bucketplace.career.greetinghr.com/ko/o/216240",
+       "region": "Seoul, South Korea",
+       "hiringType": "fulltime",
+       "slug": "/careers/2026-05-12-senior-backend-engineer-commerce"
+      }
+     },
+     {
+      "frontmatter": {
+       "name": "안전보건관리자",
+       "type": "greeting",
+       "teamName": "물류/배송",
+       "isPool": false,
+       "order": 620,
+       "recruitUrl": "https://bucketplace.career.greetinghr.com/ko/o/214138",
+       "region": "Yeoju, South Korea",
+       "hiringType": "fulltime",
+       "slug": "/careers/2026-04-24-안전보건관리자"
+      }
+     },
+     {
+      "frontmatter": {
+       "name": "인재풀 등록",
+       "type": "greeting",
+       "teamName": "물류/배송",
+       "isPool": true,
+       "order": 620,
+       "recruitUrl": "https://bucketplace.career.greetinghr.com/ko/o/214138",
+       "region": "Yeoju, South Korea",
+       "hiringType": "fulltime",
+       "slug": "/careers/2026-04-24-안전보건관리자"
+      }
+     }
+    ]
+   }
+  }
+ }
+}
