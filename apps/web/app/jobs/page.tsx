@@ -82,12 +82,21 @@ export default async function JobsPage({
     }
   }
 
-  // 공고 조건 필터가 걸려 있으면 매칭 공고가 있는 회사만, 아니면 (공고 없는 신규 회사 포함) 전부
+  /**
+   * 채용공고 목록에 띄울 회사: 내가 채용페이지 URL을 주고 등록한 회사만.
+   * careersPageUrl이 없는 회사는 Gmail 동기화가 지원 메일만 보고 자동 생성한 회사라
+   * (채용페이지·설정 등 정보가 전혀 없음) 여기 노출해봐야 의미가 없어 제외한다.
+   * 지원 이력 자체는 채용현황에 그대로 남는다.
+   */
+  const registeredCompanies = companyRows.filter(
+    (company) => company.careersPageUrl !== null,
+  );
+  // 공고 조건 필터가 걸려 있으면 매칭 공고가 있는 회사만, 아니면 (공고 없는 회사 포함) 전부
   const hasPostingFilter =
     filterState.categories.length > 0 ||
     filterState.openOnly ||
     filterState.unappliedOnly;
-  const groupedCompanies = companyRows.filter(
+  const groupedCompanies = registeredCompanies.filter(
     (company) =>
       (filterState.companyId === "all" || company.id === filterState.companyId) &&
       (!hasPostingFilter || (postingsByCompany.get(company.id)?.length ?? 0) > 0),
@@ -104,10 +113,10 @@ export default async function JobsPage({
 
       <JobsFilter
         state={filterState}
-        companies={companyRows.map((c) => ({ id: c.id, name: c.name }))}
+        companies={registeredCompanies.map((c) => ({ id: c.id, name: c.name }))}
       />
 
-      {companyRows.length === 0 ? (
+      {registeredCompanies.length === 0 ? (
         <p className="rounded-lg border border-dashed p-10 text-center text-sm text-muted-foreground">
           아직 등록된 회사가 없습니다.
         </p>
