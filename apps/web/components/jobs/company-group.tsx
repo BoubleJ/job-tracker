@@ -64,19 +64,7 @@ export function CompanyGroup({
         </span>
       </div>
       {company.policyNote ? (
-        <p className="text-xs text-muted-foreground">
-          정책 근거: “{company.policyNote}”
-          {company.policySourceUrl ? (
-            <a
-              href={company.policySourceUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="ml-1 underline"
-            >
-              출처
-            </a>
-          ) : null}
-        </p>
+        <p className="text-xs text-muted-foreground">{company.policyNote}</p>
       ) : null}
       {postings.length === 0 ? (
         <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">

@@ -48,11 +48,8 @@ export const companies = pgTable('companies', {
   duplicateApplyPolicy: applyPolicyEnum('duplicate_apply_policy')
     .notNull()
     .default('unknown'),
-  /** 채용페이지 원문 근거 문구 */
+  /** 채용페이지 원문 근거 문구 — 회사 그룹 헤더에 그대로 노출된다 */
   policyNote: text('policy_note'),
-  /** 정책 문구를 발견한 페이지 URL (역추적용) */
-  policySourceUrl: text('policy_source_url'),
-  policyCheckedAt: timestamp('policy_checked_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
 
